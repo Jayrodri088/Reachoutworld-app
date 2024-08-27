@@ -1,6 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'password_recovery_screen.dart'; // Import the Password Recovery Page
+import 'api/sign_in_api_service.dart'; // Import the SignInApiService
+import 'password_recovery_screen.dart';
+import 'dashboard.dart'; // Import the Dashboard Page
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -24,11 +26,58 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _passwordVisible = false;
+  bool _isLoading = false;
+
+  final SignInApiService apiService = SignInApiService();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _passwordVisible = false;
+  }
+
+  Future<void> _signIn() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final response = await apiService.signInUser(
+          _emailController.text,
+          _passwordController.text,
+        );
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (response['status'] == 'success') {
+                    // Navigate to the dashboard and pass user data
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DashboardScreen(
+                userName: response['name'], // Pass user's name
+                userCountry: response['country'], // Pass user's country
+              ),
+            ),
+          );
+
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(response['message'] ?? 'Sign in failed')));
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to sign in. Error: $e')));
+      }
+    }
   }
 
   @override
@@ -69,6 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(
                     height: screenHeight * 0.04), // Adjust height dynamically
                 TextFormField(
+                  controller: _emailController,
                   decoration: InputDecoration(
                     labelText: 'Email',
                     hintText: 'Enter your email address',
@@ -77,10 +127,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    return null;
+                  },
                 ),
                 SizedBox(
                     height: screenHeight * 0.02), // Adjust height dynamically
                 TextFormField(
+                  controller: _passwordController,
                   obscureText: !_passwordVisible,
                   decoration: InputDecoration(
                     labelText: 'Password',
@@ -102,6 +159,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your password';
+                    }
+                    return null;
+                  },
                 ),
                 SizedBox(
                     height: screenHeight * 0.01), // Adjust height dynamically
@@ -123,31 +186,27 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(
                     height: screenHeight * 0.02), // Adjust height dynamically
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        // Handle form submission
-                        Navigator.pushReplacementNamed(context, '/dashboard');
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _signIn,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                          child: Text(
+                            'Sign In',
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.04,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Sign In',
-                      style: TextStyle(
-                        fontSize:
-                            screenWidth * 0.04, // Adjust font size dynamically
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
                 SizedBox(
                     height: screenHeight * 0.03), // Adjust height dynamically
                 Row(
@@ -249,7 +308,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            // Navigate to sign in page
+                            // Navigate to sign up page
                             Navigator.pushReplacementNamed(context, '/signup');
                           },
                       ),

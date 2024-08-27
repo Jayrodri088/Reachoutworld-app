@@ -7,25 +7,6 @@ import 'statistics_screen.dart';
 import 'recent_activities_screen.dart';
 import 'wallet_screen.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: DashboardScreen(
-        userName: 'Jane Doe', // Replace with dynamic username
-        userCountry: 'Lagos, Nigeria', // Replace with dynamic user country
-      ),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
 class DashboardScreen extends StatefulWidget {
   final String userName;
   final String userCountry;
@@ -61,8 +42,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       drawer: Sidebar(
         userName: widget.userName,
         userCountry: widget.userCountry,
-        profileImage:
-            'assets/profile_1.webp', // Replace with the path to the profile image
+        profileImage: 'assets/profile_1.webp',
       ),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
@@ -70,12 +50,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         onTap: _onItemTapped,
         items: [
           _buildBottomNavigationBarItem('assets/icon/home.png', 'Home', 0),
-          _buildBottomNavigationBarItem(
-              'assets/icon/wallet_1.png', 'Wallet', 1),
-          _buildBottomNavigationBarItem(
-              'assets/icon/history_1.png', 'History', 2),
-          _buildBottomNavigationBarItem(
-              'assets/icon/settings_3.png', 'Settings', 3),
+          _buildBottomNavigationBarItem('assets/icon/wallet_1.png', 'Wallet', 1),
+          _buildBottomNavigationBarItem('assets/icon/history_1.png', 'History', 2),
+          _buildBottomNavigationBarItem('assets/icon/settings_3.png', 'Settings', 3),
         ],
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.grey,
@@ -115,6 +92,11 @@ class DashboardContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String userName = (ModalRoute.of(context)!.settings.arguments
+        as Map)['userName']; // Access user's name passed from LoginScreen
+    final String userCountry = (ModalRoute.of(context)!.settings.arguments
+        as Map)['userCountry']; // Access user's country passed from LoginScreen
+
     // Get screen size
     final Size screenSize = MediaQuery.of(context).size;
     final double screenWidth = screenSize.width;
@@ -122,7 +104,7 @@ class DashboardContent extends StatelessWidget {
 
     return Column(
       children: [
-        SizedBox(height: screenHeight * 0.05), // Adjust height dynamically
+        SizedBox(height: screenHeight * 0.05),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
           child: Row(
@@ -130,9 +112,9 @@ class DashboardContent extends StatelessWidget {
               Builder(builder: (context) {
                 return IconButton(
                   icon: Image.asset(
-                    'assets/icon/dashboard.png', // Replace with your dashboard icon image path
-                    width: screenWidth * 0.1, // Adjust width dynamically
-                    height: screenHeight * 0.05, // Adjust height dynamically
+                    'assets/icon/dashboard.png',
+                    width: screenWidth * 0.1,
+                    height: screenHeight * 0.05,
                   ),
                   onPressed: () {
                     Scaffold.of(context).openDrawer();
@@ -142,13 +124,11 @@ class DashboardContent extends StatelessWidget {
               const Spacer(),
               IconButton(
                 icon: Image.asset(
-                  'assets/icon/notification.png', // Replace with your notification image path
-                  width: screenWidth * 0.1, // Adjust width dynamically
-                  height: screenHeight * 0.05, // Adjust height dynamically
+                  'assets/icon/notification.png',
+                  width: screenWidth * 0.1,
+                  height: screenHeight * 0.05,
                 ),
-                onPressed: () {
-                  // Handle notification icon press
-                },
+                onPressed: () {},
               ),
             ],
           ),
@@ -158,28 +138,24 @@ class DashboardContent extends StatelessWidget {
           child: Row(
             children: [
               CircleAvatar(
-                radius: screenWidth * 0.1, // Adjust radius dynamically
-                backgroundImage: const AssetImage(
-                  'assets/profile_1.webp', // Replace with your profile icon image path
-                ),
+                radius: screenWidth * 0.1,
+                backgroundImage: const AssetImage('assets/profile_1.webp'),
               ),
-              SizedBox(width: screenWidth * 0.03), // Adjust width dynamically
+              SizedBox(width: screenWidth * 0.03),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Welcome, Jane Doe',
+                    'Welcome, $userName',
                     style: TextStyle(
                         fontSize: screenWidth * 0.045,
-                        fontWeight:
-                            FontWeight.bold), // Adjust font size dynamically
+                        fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    'Lagos, Nigeria',
+                    userCountry,
                     style: TextStyle(
                         color: Colors.grey,
-                        fontSize: screenWidth *
-                            0.035), // Adjust font size dynamically
+                        fontSize: screenWidth * 0.035),
                   ),
                 ],
               ),

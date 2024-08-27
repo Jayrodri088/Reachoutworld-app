@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class SignUpApiService {
   final String baseUrl =
-      'http://154.113.83.250/reachoutworlddc/register.html'; // Ensure this URL is correct
+      'http://10.11.0.106/reachoutworlddc/register.html'; // Ensure this URL is correct
 
   Future<Map<String, dynamic>> registerUser(
       String name, String email, String country, String password) async {
