@@ -128,7 +128,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          DashboardContent(userId: widget.userId), // Passing userId to DashboardContent
+          DashboardContent(
+            userId: widget.userId,
+            userName: _userName ?? 'User', // Pass userName
+            userCountry: _userCountry ?? 'Country', // Pass userCountry
+            profileImageUrl: _profileImageUrl ?? 'assets/profile_1.webp', // Pass profile image URL
+          ),
           const WalletScreen(),
           RecentActivitiesScreen(),
           const Center(child: Text('Settings Screen Placeholder')),
@@ -177,9 +182,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
 }
 
 class DashboardContent extends StatelessWidget {
-  final String userId; // Added userId for DataCaptureForm
+  final String userId;
+  final String userName;
+  final String userCountry;
+  final String profileImageUrl;
 
-  const DashboardContent({super.key, required this.userId});
+  const DashboardContent({
+    super.key,
+    required this.userId,
+    required this.userName,
+    required this.userCountry,
+    required this.profileImageUrl,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -229,7 +243,7 @@ class DashboardContent extends StatelessWidget {
                 },
                 child: CircleAvatar(
                   radius: screenWidth * 0.1,
-                  backgroundImage: const AssetImage('assets/profile_1.webp'),
+                  backgroundImage: NetworkImage(profileImageUrl),
                 ),
               ),
               SizedBox(width: screenWidth * 0.03),
@@ -237,14 +251,14 @@ class DashboardContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Welcome, User',
+                    'Welcome, $userName',
                     style: TextStyle(
                       fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    'Country',
+                    userCountry,
                     style: TextStyle(
                       color: Colors.grey,
                       fontSize: screenWidth * 0.035,

@@ -29,30 +29,39 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
     // Add more countries as needed
   ];
 
-  Future<void> _captureData() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        final response = await apiService.registerUser(
-          widget.userId, // Pass user_id to the API service
-          _nameController.text,
-          _emailController.text,
-          _phoneController.text,
-          _countryController.text,
-        );
+Future<void> _captureData() async {
+  if (_formKey.currentState!.validate()) {
+    try {
+      // Show loading indicator if necessary
+      final response = await apiService.registerUser(
+        widget.userId, // Pass user_id to the API service
+        _nameController.text,
+        _emailController.text,
+        _phoneController.text,
+        _countryController.text,
+      );
 
-        if (response['status'] == 'success') {
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Data captured successfully')));
-        } else {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(response['message'])));
-        }
-      } catch (e) {
+      // Debugging the response
+      print('Response from server: $response');
+
+      if (response['status'] == 'success') {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to capture data')));
+          const SnackBar(content: Text('Data captured successfully')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response['message'] ?? 'Unknown error')),
+        );
       }
+    } catch (e) {
+      // Provide more detailed error information
+      print('Error during data capture: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to capture data. Error: $e')),
+      );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
