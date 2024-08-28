@@ -7,13 +7,14 @@ class SignInApiService {
 
   Future<Map<String, dynamic>> signInUser(String email, String password) async {
     try {
+      // Sending data as application/x-www-form-urlencoded
       final response = await http.post(
         Uri.parse(baseUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
           'email': email,
           'password': password,
-        }),
+        },
       );
 
       // Debugging the response

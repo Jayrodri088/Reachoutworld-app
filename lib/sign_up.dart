@@ -1,8 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:data_app/sign_in.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'verification_code.dart';
+// import 'verification_code.dart';
 import 'api/sign_up_api_service.dart'; // Import your API service
 
 class SignUpScreen extends StatefulWidget {
@@ -54,7 +55,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               const SnackBar(content: Text('User registered successfully')));
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const VerificationScreen()),
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
           );
         } else {
           debugPrint('Error: ${response['message']}');

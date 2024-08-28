@@ -40,89 +40,89 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordVisible = false;
   }
 
-Future<void> _signIn() async {
-  if (_formKey.currentState!.validate()) {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final response = await apiService.signInUser(
-        _emailController.text,
-        _passwordController.text,
-      );
-
+  Future<void> _signIn() async {
+    if (_formKey.currentState!.validate()) {
       setState(() {
-        _isLoading = false;
+        _isLoading = true;
       });
 
-      if (response['status'] == 'success') {
-        // Pass the user's ID to the DashboardScreen
-        final String userId = response['user_id'];
+      // Ensure inputs are properly trimmed
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DashboardScreen(
-              userId: userId, // Pass the userId to the dashboard
+      try {
+        // Call the API service to sign in the user
+        final response = await apiService.signInUser(email, password);
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (response['status'] == 'success') {
+          // Successfully signed in, navigate to the DashboardScreen
+          final String userId = response['user_id'].toString();
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DashboardScreen(
+                userId: userId, // Pass the userId to the dashboard
+              ),
             ),
-          ),
-        );
-      } else if (response['message'] == 'Invalid Email or Password') {
-        // Show platform-specific alert dialog
-        if (Platform.isIOS) {
-          showCupertinoDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return CupertinoAlertDialog(
-                title: const Text('Login Failed'),
-                content: const Text('Invalid Email or Password. Please try again.'),
-                actions: <CupertinoDialogAction>[
-                  CupertinoDialogAction(
-                    child: const Text('OK'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
           );
         } else {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('Login Failed'),
-                content: const Text('Invalid Email or Password. Please try again.'),
-                actions: <Widget>[
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(); // Close the dialog
-                    },
-                    child: const Text('OK'),
-                  ),
-                ],
-              );
-            },
-          );
+          // Handle invalid credentials or other issues
+          _showAlertDialog(response['message'] ?? 'Login failed');
         }
-      } else {
-        // Handle other errors
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response['message'] ?? 'Sign in failed')),
-        );
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        // Display an error message for failed sign-in attempts
+        _showAlertDialog('Failed to sign in. Error: $e');
       }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to sign in. Error: $e')),
+    }
+  }
+
+  void _showAlertDialog(String message) {
+    if (Platform.isIOS) {
+      showCupertinoDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CupertinoAlertDialog(
+            title: const Text('Login Failed'),
+            content: Text(message),
+            actions: <CupertinoDialogAction>[
+              CupertinoDialogAction(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Login Failed'),
+            content: Text(message),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
       );
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {
