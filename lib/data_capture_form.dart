@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'api/api_service.dart';
 
 class DataCaptureForm extends StatefulWidget {
-  const DataCaptureForm({super.key});
+    final String userId; // Accept user_id as an argument
+
+  const DataCaptureForm({super.key, required this.userId});
 
   @override
   _DataCaptureFormState createState() => _DataCaptureFormState();
@@ -31,6 +33,7 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
     if (_formKey.currentState!.validate()) {
       try {
         final response = await apiService.registerUser(
+          widget.userId, // Pass user_id to the API service
           _nameController.text,
           _emailController.text,
           _phoneController.text,
@@ -57,125 +60,125 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 16), // Top padding
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  IconButton(
-                    icon: Image.asset(
-                      'assets/arrow.png',
-                      height: 30,
-                      width: 30,
-                    ), // Replace with your back button image path
-                    iconSize: 24,
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 16), // Top padding
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      icon: Image.asset(
+                        'assets/arrow.png',
+                        height: 30,
+                        width: 30,
+                      ), // Replace with your back button image path
+                      iconSize: 24,
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Data Form',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Fill your details below',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                TextFormField(
+                  controller: _nameController, // Added Controller
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.person),
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Data Form',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Fill your details below',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your name';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Phone Number',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.phone),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your phone number';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _countryController,
-                decoration: InputDecoration(
-                  labelText: 'Country of Residence',
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.flag),
-                  suffixIcon: PopupMenuButton<String>(
-                    icon: const Icon(Icons.arrow_drop_down),
-                    onSelected: (String value) {
-                      _countryController.text = value;
-                    },
-                    itemBuilder: (BuildContext context) {
-                      return _countries
-                          .map<PopupMenuItem<String>>((String value) {
-                        return PopupMenuItem(child: Text(value), value: value);
-                      }).toList();
-                    },
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _emailController, // Added Controller
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.email),
                   ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your country of residence';
-                  }
-                  return null;
-                },
-                // onChanged: (value) {
-                //   setState(() {
-                //     _selectedCountry = value.isEmpty ? null : value;
-                //   });
-                // },
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _captureData,
-                style: ElevatedButton.styleFrom(
-                  // primary: Colors.orange,
-                  backgroundColor: Colors.orange,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _phoneController, // Added Controller
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    labelText: 'Phone Number',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.phone),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your phone number';
+                    }
+                    return null;
+                  },
                 ),
-                child: const Text('Submit', style: TextStyle(fontSize: 16)),
-              ),
-            ],
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _countryController, // Added Controller
+                  decoration: InputDecoration(
+                    labelText: 'Country of Residence',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.flag),
+                    suffixIcon: PopupMenuButton<String>(
+                      icon: const Icon(Icons.arrow_drop_down),
+                      onSelected: (String value) {
+                        _countryController.text = value;
+                      },
+                      itemBuilder: (BuildContext context) {
+                        return _countries
+                            .map<PopupMenuItem<String>>((String value) {
+                          return PopupMenuItem(child: Text(value), value: value);
+                        }).toList();
+                      },
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your country of residence';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: _captureData,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  ),
+                  child: const Text('Submit', style: TextStyle(fontSize: 16)),
+                ),
+              ],
+            ),
           ),
         ),
       ),

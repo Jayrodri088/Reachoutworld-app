@@ -33,13 +33,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? _userCountry;
   final ImagePicker _picker = ImagePicker();
 
-  static final List<Widget> _widgetOptions = <Widget>[
-    const DashboardContent(),
-    const WalletScreen(),
-    RecentActivitiesScreen(),
-    const Center(child: Text('Settings Screen Placeholder')),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -57,9 +50,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     try {
       final response = await http.post(
         Uri.parse(url),
-        body: {
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
           'user_id': widget.userId,
-        },
+        }),
       );
 
       if (response.statusCode == 200) {
@@ -68,7 +62,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         setState(() {
           _userName = data['name'];
           _userCountry = data['country'];
-          _profileImageUrl = data['profile_image_url'];
+          _profileImageUrl = data['profile_picture_url'];
         });
       } else {
         throw Exception('Failed to load user data');
@@ -105,7 +99,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       if (result['status'] == 'success') {
         setState(() {
-          _profileImageUrl = result['profile_image_url'];
+          _profileImageUrl = result['profile_picture_url'];
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile image updated successfully')),
@@ -129,9 +123,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       drawer: Sidebar(
         userName: _userName ?? 'Loading...',
         userCountry: _userCountry ?? 'Loading...',
-        profileImage: _profileImageUrl ?? 'assets/profile_1.webp',
+        profileImage: _profileImageUrl ?? 'assets/profile_1.webp', // Fallback to default image
       ),
-      body: _widgetOptions.elementAt(_selectedIndex),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          DashboardContent(userId: widget.userId), // Passing userId to DashboardContent
+          const WalletScreen(),
+          RecentActivitiesScreen(),
+          const Center(child: Text('Settings Screen Placeholder')),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -175,16 +177,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
 }
 
 class DashboardContent extends StatelessWidget {
-  const DashboardContent({super.key});
+  final String userId; // Added userId for DataCaptureForm
+
+  const DashboardContent({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> arguments = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final String userName = arguments['userName'] ?? 'Unknown';
-    final String userCountry = arguments['userCountry'] ?? 'Unknown';
-    final String? profileImageUrl = arguments['profileImageUrl'];
-
-    // Get screen size
     final Size screenSize = MediaQuery.of(context).size;
     final double screenWidth = screenSize.width;
     final double screenHeight = screenSize.height;
@@ -231,9 +229,7 @@ class DashboardContent extends StatelessWidget {
                 },
                 child: CircleAvatar(
                   radius: screenWidth * 0.1,
-                  backgroundImage: profileImageUrl != null
-                      ? NetworkImage(profileImageUrl)
-                      : const AssetImage('assets/profile_1.webp') as ImageProvider,
+                  backgroundImage: const AssetImage('assets/profile_1.webp'),
                 ),
               ),
               SizedBox(width: screenWidth * 0.03),
@@ -241,16 +237,18 @@ class DashboardContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Welcome, $userName',
+                    'Welcome, User',
                     style: TextStyle(
-                        fontSize: screenWidth * 0.045,
-                        fontWeight: FontWeight.bold),
+                      fontSize: screenWidth * 0.045,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(
-                    userCountry,
+                    'Country',
                     style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: screenWidth * 0.035),
+                      color: Colors.grey,
+                      fontSize: screenWidth * 0.035,
+                    ),
                   ),
                 ],
               ),
@@ -278,13 +276,11 @@ class DashboardContent extends StatelessWidget {
             ),
             child: GridView.count(
               crossAxisCount: 2,
-              mainAxisSpacing:
-                  screenHeight * 0.02,
-              crossAxisSpacing:
-                  screenWidth * 0.02,
+              mainAxisSpacing: screenHeight * 0.02,
+              crossAxisSpacing: screenWidth * 0.02,
               children: [
                 _buildGridItem(context, 'assets/icon/capture_form.png',
-                    'Data Capture', const DataCaptureForm()),
+                    'Data Capture', DataCaptureForm(userId: userId)),
                 _buildGridItem(context, 'assets/icon/leaderboard.png',
                     'Leader board', const LeaderboardScreen()),
                 _buildGridItem(context, 'assets/icon/statistics.png',
@@ -312,14 +308,14 @@ class DashboardContent extends StatelessWidget {
       elevation: 4,
       shadowColor: Colors.black54,
       child: InkWell(
-        onTap: destination != null
-            ? () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => destination),
-                );
-              }
-            : null,
+        onTap: () {
+          if (destination != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => destination),
+            );
+          }
+        },
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -332,8 +328,9 @@ class DashboardContent extends StatelessWidget {
             Text(
               title,
               style: TextStyle(
-                  fontSize: screenWidth * 0.04,
-                  fontWeight: FontWeight.bold),
+                fontSize: screenWidth * 0.04,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
