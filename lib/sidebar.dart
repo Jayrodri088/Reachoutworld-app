@@ -82,22 +82,22 @@ class Sidebar extends StatelessWidget {
                     const SizedBox(
                       height: 40,
                     ),
-                    _buildDrawerItem(
-                        'assets/icon/account.png', 'Account Settings',
-                        onTap: () {}),
-                    _buildDrawerItem('assets/icon/link_account.png',
-                        'Linked Social Media Accounts',
-                        onTap: () {}),
+                    // _buildDrawerItem(
+                    //     'assets/icon/account.png', 'Account Settings',
+                    //     onTap: () {}),
+                    // _buildDrawerItem('assets/icon/link_account.png',
+                    //     'Linked Social Media Accounts',
+                    //     onTap: () {}),
                     // _buildDrawerItem(
                     //     'assets/icon/leaderboard.png', 'Leaderboard',
                     //     onTap: () {}),
                     _buildDrawerItem('assets/icon/feedback.png', 'Feedback',
                         onTap: () {}),
-                    _buildDrawerItem(
-                        'assets/icon/settings.png',  'Settings',
-                        onTap: () {}),
-                    _buildDrawerItem('assets/icon/delete.png', 'Deactivate Account',
-                        onTap: () {}),
+                    // _buildDrawerItem(
+                    //     'assets/icon/settings.png',  'Settings',
+                    //     onTap: () {}),
+                    // _buildDrawerItem('assets/icon/delete.png', 'Deactivate Account',
+                    //     onTap: () {}),
                     _buildDrawerItem(
                       'assets/icon/logout.png',
                       'Log Out',

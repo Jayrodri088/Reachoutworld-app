@@ -6,9 +6,12 @@ class StatisticsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
         children: [
-          const SizedBox(height: 30,),
+          const SizedBox(
+            height: 30,
+          ),
           Container(
             color: Colors.white, // Set the background color here
             padding: const EdgeInsets.all(16.0),
@@ -44,6 +47,14 @@ class StatisticsScreen extends StatelessWidget {
                   },
                 ),
               ],
+            ),
+          ),
+          const Spacer(),
+          const Text(
+            'COMING SOON',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
           ),
           Expanded(

@@ -133,6 +133,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             userName: _userName ?? 'User', // Pass userName
             userCountry: _userCountry ?? 'Country', // Pass userCountry
             profileImageUrl: _profileImageUrl ?? 'assets/profile_1.webp', // Pass profile image URL
+            pickImageFunction: _pickImage, // Pass the _pickImage function
           ),
           const WalletScreen(),
           RecentActivitiesScreen(),
@@ -186,6 +187,7 @@ class DashboardContent extends StatelessWidget {
   final String userName;
   final String userCountry;
   final String profileImageUrl;
+  final VoidCallback pickImageFunction; // Callback to pickImage function
 
   const DashboardContent({
     super.key,
@@ -193,6 +195,7 @@ class DashboardContent extends StatelessWidget {
     required this.userName,
     required this.userCountry,
     required this.profileImageUrl,
+    required this.pickImageFunction, // Accept the pickImage function
   });
 
   @override
@@ -237,10 +240,7 @@ class DashboardContent extends StatelessWidget {
           child: Row(
             children: [
               GestureDetector(
-                onTap: () {
-                  // Trigger image picking
-                  (context as _DashboardScreenState)._pickImage();
-                },
+                onTap: pickImageFunction, // Use the passed function
                 child: CircleAvatar(
                   radius: screenWidth * 0.1,
                   backgroundImage: NetworkImage(profileImageUrl),

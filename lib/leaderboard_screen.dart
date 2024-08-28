@@ -6,6 +6,7 @@ class LeaderboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
         children: [
           const SizedBox(height: 30,),
@@ -44,6 +45,15 @@ class LeaderboardScreen extends StatelessWidget {
                   },
                 ),
               ],
+            ),
+            
+          ),
+          const Spacer(),
+          const Text(
+            'COMING SOON',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
           ),
           Expanded(

@@ -32,7 +32,15 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
 Future<void> _captureData() async {
   if (_formKey.currentState!.validate()) {
     try {
-      // Show loading indicator if necessary
+      // Print the data being sent for debugging purposes
+      print('Sending data: ${{
+        'user_id': widget.userId,
+        'name': _nameController.text,
+        'email': _emailController.text,
+        'phone': _phoneController.text,
+        'country': _countryController.text,
+      }}');
+
       final response = await apiService.registerUser(
         widget.userId, // Pass user_id to the API service
         _nameController.text,
@@ -41,7 +49,7 @@ Future<void> _captureData() async {
         _countryController.text,
       );
 
-      // Debugging the response
+      // Debug the response
       print('Response from server: $response');
 
       if (response['status'] == 'success') {
@@ -54,7 +62,7 @@ Future<void> _captureData() async {
         );
       }
     } catch (e) {
-      // Provide more detailed error information
+      // Print and display the error
       print('Error during data capture: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to capture data. Error: $e')),
