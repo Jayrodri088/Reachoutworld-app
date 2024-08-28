@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class SignInApiService {
   final String baseUrl =
-      'http://10.11.0.106/reachoutworlddc/login.html'; // Replace with your actual backend URL
+      'http://10.11.0.106/reachoutworlddc/login.php'; // Correct backend URL for the sign-in endpoint
 
   Future<Map<String, dynamic>> signInUser(String email, String password) async {
     try {
@@ -22,7 +22,13 @@ class SignInApiService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
-        return responseData;
+
+        if (responseData.containsKey('user_id')) {
+          // Ensure the response contains a user_id
+          return responseData;
+        } else {
+          throw Exception('Invalid response: Missing user_id');
+        }
       } else {
         throw Exception(
             'Failed to sign in. Server responded with status code ${response.statusCode}');

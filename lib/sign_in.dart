@@ -1,8 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'api/sign_in_api_service.dart'; // Import the SignInApiService
-import 'password_recovery_screen.dart';
 import 'dashboard.dart'; // Import the Dashboard Page
+import 'password_recovery_screen.dart';
+import 'dart:io';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -38,47 +40,89 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordVisible = false;
   }
 
-  Future<void> _signIn() async {
-    if (_formKey.currentState!.validate()) {
+Future<void> _signIn() async {
+  if (_formKey.currentState!.validate()) {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await apiService.signInUser(
+        _emailController.text,
+        _passwordController.text,
+      );
+
       setState(() {
-        _isLoading = true;
+        _isLoading = false;
       });
 
-      try {
-        final response = await apiService.signInUser(
-          _emailController.text,
-          _passwordController.text,
-        );
+      if (response['status'] == 'success') {
+        // Pass the user's ID to the DashboardScreen
+        final String userId = response['user_id'];
 
-        setState(() {
-          _isLoading = false;
-        });
-
-        if (response['status'] == 'success') {
-                    // Navigate to the dashboard and pass user data
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DashboardScreen(
-                userName: response['name'], // Pass user's name
-                userCountry: response['country'], // Pass user's country
-              ),
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DashboardScreen(
+              userId: userId, // Pass the userId to the dashboard
             ),
+          ),
+        );
+      } else if (response['message'] == 'Invalid Email or Password') {
+        // Show platform-specific alert dialog
+        if (Platform.isIOS) {
+          showCupertinoDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return CupertinoAlertDialog(
+                title: const Text('Login Failed'),
+                content: const Text('Invalid Email or Password. Please try again.'),
+                actions: <CupertinoDialogAction>[
+                  CupertinoDialogAction(
+                    child: const Text('OK'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
           );
-
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(response['message'] ?? 'Sign in failed')));
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Login Failed'),
+                content: const Text('Invalid Email or Password. Please try again.'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close the dialog
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
         }
-      } catch (e) {
-        setState(() {
-          _isLoading = false;
-        });
+      } else {
+        // Handle other errors
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to sign in. Error: $e')));
+          SnackBar(content: Text(response['message'] ?? 'Sign in failed')),
+        );
       }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to sign in. Error: $e')),
+      );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {

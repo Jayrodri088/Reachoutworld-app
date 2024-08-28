@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'sign_in.dart';
 import 'sign_up.dart';
 import 'welcome_screen.dart';
-import 'dashboard.dart';
+// import 'dashboard.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,11 +20,7 @@ class MyApp extends StatelessWidget {
         '/welcome': (context) => WelcomeScreen(),
         '/signin': (context) => const LoginScreen(),
         '/signup': (context) => const SignUpScreen(),
-        '/dashboard': (context) => const DashboardScreen(
-              userName: 'Jane Doe', // Replace with dynamic username
-              userCountry:
-                  'Lagos, Nigeria', // Replace with dynamic user country
-            ),
+        // '/dashboard': (context) =>  DashboardScreen(userId: ),
       },
       debugShowCheckedModeBanner: false,
     );

@@ -1,4 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import 'camera_screen.dart';
 import 'sidebar.dart';
 import 'data_capture_form.dart';
@@ -8,11 +13,12 @@ import 'recent_activities_screen.dart';
 import 'wallet_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
-  final String userName;
-  final String userCountry;
+  final String userId; // Pass userId to fetch data
 
-  const DashboardScreen(
-      {super.key, required this.userName, required this.userCountry});
+  const DashboardScreen({
+    super.key,
+    required this.userId,
+  });
 
   @override
   _DashboardScreenState createState() => _DashboardScreenState();
@@ -21,6 +27,11 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
+  File? _imageFile;
+  String? _profileImageUrl;
+  String? _userName;
+  String? _userCountry;
+  final ImagePicker _picker = ImagePicker();
 
   static final List<Widget> _widgetOptions = <Widget>[
     const DashboardContent(),
@@ -29,10 +40,86 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const Center(child: Text('Settings Screen Placeholder')),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  Future<void> _fetchUserData() async {
+    const String url = 'http://10.11.0.106/reachoutworlddc/dashboard.php'; // Your backend URL
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        body: {
+          'user_id': widget.userId,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+
+        setState(() {
+          _userName = data['name'];
+          _userCountry = data['country'];
+          _profileImageUrl = data['profile_image_url'];
+        });
+      } else {
+        throw Exception('Failed to load user data');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+      await _uploadProfileImage(_imageFile!);
+    }
+  }
+
+  Future<void> _uploadProfileImage(File image) async {
+    const url = 'http://10.11.0.106/reachoutworlddc/profile.php'; // Your backend URL
+    final request = http.MultipartRequest('POST', Uri.parse(url));
+    request.files.add(await http.MultipartFile.fromPath('profile_picture', image.path));
+    request.fields['user_id'] = widget.userId;
+
+    final response = await request.send();
+
+    if (response.statusCode == 200) {
+      final responseData = await response.stream.bytesToString();
+      final result = json.decode(responseData);
+
+      if (result['status'] == 'success') {
+        setState(() {
+          _profileImageUrl = result['profile_image_url'];
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile image updated successfully')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'] ?? 'Image upload failed')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to upload image.')),
+      );
+    }
   }
 
   @override
@@ -40,9 +127,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       key: _scaffoldKey,
       drawer: Sidebar(
-        userName: widget.userName,
-        userCountry: widget.userCountry,
-        profileImage: 'assets/profile_1.webp',
+        userName: _userName ?? 'Loading...',
+        userCountry: _userCountry ?? 'Loading...',
+        profileImage: _profileImageUrl ?? 'assets/profile_1.webp',
       ),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
@@ -92,10 +179,10 @@ class DashboardContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String userName = (ModalRoute.of(context)!.settings.arguments
-        as Map)['userName']; // Access user's name passed from LoginScreen
-    final String userCountry = (ModalRoute.of(context)!.settings.arguments
-        as Map)['userCountry']; // Access user's country passed from LoginScreen
+    final Map<String, dynamic> arguments = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final String userName = arguments['userName'] ?? 'Unknown';
+    final String userCountry = arguments['userCountry'] ?? 'Unknown';
+    final String? profileImageUrl = arguments['profileImageUrl'];
 
     // Get screen size
     final Size screenSize = MediaQuery.of(context).size;
@@ -137,9 +224,17 @@ class DashboardContent extends StatelessWidget {
           padding: EdgeInsets.all(screenWidth * 0.02),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: screenWidth * 0.1,
-                backgroundImage: const AssetImage('assets/profile_1.webp'),
+              GestureDetector(
+                onTap: () {
+                  // Trigger image picking
+                  (context as _DashboardScreenState)._pickImage();
+                },
+                child: CircleAvatar(
+                  radius: screenWidth * 0.1,
+                  backgroundImage: profileImageUrl != null
+                      ? NetworkImage(profileImageUrl)
+                      : const AssetImage('assets/profile_1.webp') as ImageProvider,
+                ),
               ),
               SizedBox(width: screenWidth * 0.03),
               Column(
@@ -165,7 +260,7 @@ class DashboardContent extends StatelessWidget {
         ),
         Container(
           width: screenWidth,
-          height: screenHeight * 0.02, // Adjust height dynamically
+          height: screenHeight * 0.02,
           decoration: const BoxDecoration(
             color: Color.fromARGB(204, 245, 151, 10),
             borderRadius: BorderRadius.only(
@@ -184,9 +279,9 @@ class DashboardContent extends StatelessWidget {
             child: GridView.count(
               crossAxisCount: 2,
               mainAxisSpacing:
-                  screenHeight * 0.02, // Adjust spacing dynamically
+                  screenHeight * 0.02,
               crossAxisSpacing:
-                  screenWidth * 0.02, // Adjust spacing dynamically
+                  screenWidth * 0.02,
               children: [
                 _buildGridItem(context, 'assets/icon/capture_form.png',
                     'Data Capture', const DataCaptureForm()),
@@ -206,7 +301,6 @@ class DashboardContent extends StatelessWidget {
 
   Widget _buildGridItem(BuildContext context, String imagePath, String title,
       [Widget? destination]) {
-    // Get screen size
     final Size screenSize = MediaQuery.of(context).size;
     final double screenWidth = screenSize.width;
     final double screenHeight = screenSize.height;
@@ -231,15 +325,15 @@ class DashboardContent extends StatelessWidget {
           children: [
             Image.asset(
               imagePath,
-              width: screenWidth * 0.15, // Adjust width dynamically
-              height: screenHeight * 0.1, // Adjust height dynamically
+              width: screenWidth * 0.15,
+              height: screenHeight * 0.1,
             ),
-            SizedBox(height: screenHeight * 0.01), // Adjust height dynamically
+            SizedBox(height: screenHeight * 0.01),
             Text(
               title,
               style: TextStyle(
                   fontSize: screenWidth * 0.04,
-                  fontWeight: FontWeight.bold), // Adjust font size dynamically
+                  fontWeight: FontWeight.bold),
             ),
           ],
         ),
