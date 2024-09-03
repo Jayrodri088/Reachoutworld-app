@@ -73,6 +73,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
     final fileSize = (fileStat.size / 1024).toStringAsFixed(2); // size in KB
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,

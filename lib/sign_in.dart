@@ -1,10 +1,15 @@
+import 'dart:async';  // Import the Timer class
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'api/sign_in_api_service.dart'; // Import the SignInApiService
-import 'dashboard.dart'; // Import the Dashboard Page
+import 'api/sign_in_api_service.dart';
+import 'api/recent_activities_api_service.dart';
+import 'dashboard.dart';
 import 'password_recovery_screen.dart';
 import 'dart:io';
+
+// Global variable to store recent activities
+List<Map<String, dynamic>> recentActivities = [];
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -29,8 +34,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _passwordVisible = false;
   bool _isLoading = false;
+  Timer? _timer; // Declare the timer
 
-  final SignInApiService apiService = SignInApiService();
+  final SignInApiService signInApiService = SignInApiService();
+  final RecentActivitiesApiService recentActivitiesApiService = RecentActivitiesApiService();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -40,48 +47,76 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordVisible = false;
   }
 
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancel the timer when the widget is disposed
+    super.dispose();
+  }
+
   Future<void> _signIn() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
 
-      // Ensure inputs are properly trimmed
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
 
       try {
-        // Call the API service to sign in the user
-        final response = await apiService.signInUser(email, password);
+        final response = await signInApiService.signInUser(email, password);
 
         setState(() {
           _isLoading = false;
         });
 
         if (response['status'] == 'success') {
-          // Successfully signed in, navigate to the DashboardScreen
           final String userId = response['user_id'].toString();
 
+          // Fetch recent activities and store them in the global variable
+          recentActivities = await recentActivitiesApiService.getRecentActivities(userId);
+
+          // Start a timer to fetch recent activities every 2 minutes
+          _startFetchingRecentActivities(userId);
+
+          // Navigate to the DashboardScreen
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => DashboardScreen(
-                userId: userId, // Pass the userId to the dashboard
-              ),
+              builder: (context) => DashboardScreen(userId: userId),
             ),
           );
         } else {
-          // Handle invalid credentials or other issues
           _showAlertDialog(response['message'] ?? 'Login failed');
         }
       } catch (e) {
         setState(() {
           _isLoading = false;
         });
-        // Display an error message for failed sign-in attempts
-        _showAlertDialog('Failed to sign in. Error: $e');
+        _showAlertDialog('Wrong email or password');
       }
     }
+  }
+
+  void _startFetchingRecentActivities(String userId) {
+    print('Starting periodic fetch for recent activities...');
+
+    _timer = Timer.periodic(Duration(seconds: 5), (Timer timer) async {
+      try {
+        print('Fetching recent activities...');
+        List<Map<String, dynamic>> fetchedActivities = await recentActivitiesApiService.getRecentActivities(userId);
+
+        if (fetchedActivities.isNotEmpty) {
+          setState(() {
+            recentActivities = fetchedActivities;
+          });
+          print('Recent activities updated: $recentActivities');
+        } else {
+          print('No new activities found.');
+        }
+      } catch (e) {
+        print('Error fetching recent activities: $e');
+      }
+    });
   }
 
   void _showAlertDialog(String message) {
@@ -91,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
         builder: (BuildContext context) {
           return CupertinoAlertDialog(
             title: const Text('Login Failed'),
-            content: Text(message),
+            content: Text('Wrong email or password'),
             actions: <CupertinoDialogAction>[
               CupertinoDialogAction(
                 child: const Text('OK'),
@@ -113,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
             actions: <Widget>[
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
+                  Navigator.of(context).pop();
                 },
                 child: const Text('OK'),
               ),
@@ -126,7 +161,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Get screen size
     final Size screenSize = MediaQuery.of(context).size;
     final double screenWidth = screenSize.width;
     final double screenHeight = screenSize.height;
@@ -140,27 +174,22 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(
-                    height: screenHeight * 0.1), // Adjust height dynamically
+                SizedBox(height: screenHeight * 0.1),
                 Text(
                   'Welcome Back!',
                   style: TextStyle(
-                    fontSize:
-                        screenWidth * 0.06, // Adjust font size dynamically
+                    fontSize: screenWidth * 0.06,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(
-                    height: screenHeight * 0.01), // Adjust height dynamically
+                SizedBox(height: screenHeight * 0.01),
                 Text(
                   'Hi! Welcome back',
                   style: TextStyle(
-                      fontSize:
-                          screenWidth * 0.04), // Adjust font size dynamically
+                      fontSize: screenWidth * 0.04),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(
-                    height: screenHeight * 0.04), // Adjust height dynamically
+                SizedBox(height: screenHeight * 0.04),
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
@@ -178,8 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
-                SizedBox(
-                    height: screenHeight * 0.02), // Adjust height dynamically
+                SizedBox(height: screenHeight * 0.02),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: !_passwordVisible,
@@ -189,9 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _passwordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+                        _passwordVisible ? Icons.visibility : Icons.visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
@@ -210,8 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
-                SizedBox(
-                    height: screenHeight * 0.01), // Adjust height dynamically
+                SizedBox(height: screenHeight * 0.01),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
@@ -228,8 +253,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                SizedBox(
-                    height: screenHeight * 0.02), // Adjust height dynamically
+                SizedBox(height: screenHeight * 0.02),
                 _isLoading
                     ? const CircularProgressIndicator()
                     : SizedBox(
@@ -251,39 +275,34 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                SizedBox(
-                    height: screenHeight * 0.03), // Adjust height dynamically
+                SizedBox(height: screenHeight * 0.03),
                 Row(
                   children: [
                     Expanded(
                       child: Divider(
                         thickness: 1,
                         color: Colors.black,
-                        indent: screenWidth * 0.15, // Adjust indent dynamically
-                        endIndent:
-                            screenWidth * 0.02, // Adjust end indent dynamically
+                        indent: screenWidth * 0.15,
+                        endIndent: screenWidth * 0.02,
                       ),
                     ),
                     Text(
                       'Or Sign in with',
                       style: TextStyle(
-                        fontSize:
-                            screenWidth * 0.04, // Adjust font size dynamically
+                        fontSize: screenWidth * 0.04,
                       ),
                     ),
                     Expanded(
                       child: Divider(
                         thickness: 1,
                         color: Colors.black,
-                        indent: screenWidth * 0.02, // Adjust indent dynamically
-                        endIndent:
-                            screenWidth * 0.15, // Adjust end indent dynamically
+                        indent: screenWidth * 0.02,
+                        endIndent: screenWidth * 0.15,
                       ),
                     ),
                   ],
                 ),
-                SizedBox(
-                    height: screenHeight * 0.02), // Adjust height dynamically
+                SizedBox(height: screenHeight * 0.02),
                 GestureDetector(
                   onTap: () {
                     // Handle KingsChat login
@@ -303,26 +322,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     padding: EdgeInsets.symmetric(
                         vertical: screenHeight * 0.02,
-                        horizontal:
-                            screenWidth * 0.05), // Adjust padding dynamically
+                        horizontal: screenWidth * 0.05),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Image.asset(
-                          'assets/app_logo.png', // Replace with your KingsChat logo path
-                          width: screenWidth * 0.08, // Adjust width dynamically
-                          height:
-                              screenWidth * 0.08, // Adjust height dynamically
+                          'assets/app_logo.png',
+                          width: screenWidth * 0.08,
+                          height: screenWidth * 0.08,
                         ),
-                        SizedBox(
-                            width:
-                                screenWidth * 0.03), // Adjust width dynamically
+                        SizedBox(width: screenWidth * 0.03),
                         Text(
                           'Kings Chat',
                           style: TextStyle(
                             color: Colors.blue,
-                            fontSize: screenWidth *
-                                0.04, // Adjust font size dynamically
+                            fontSize: screenWidth * 0.04,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -330,15 +344,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                SizedBox(
-                    height: screenHeight * 0.03), // Adjust height dynamically
+                SizedBox(height: screenHeight * 0.03),
                 RichText(
                   text: TextSpan(
                     text: 'Don\'t have an account? ',
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize:
-                          screenWidth * 0.04, // Adjust font size dynamically
+                      fontSize: screenWidth * 0.04,
                     ),
                     children: [
                       TextSpan(
@@ -347,12 +359,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: Colors.orange,
                           fontWeight: FontWeight.bold,
                           decoration: TextDecoration.none,
-                          fontSize: screenWidth *
-                              0.04, // Adjust font size dynamically
+                          fontSize: screenWidth * 0.04,
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            // Navigate to sign up page
                             Navigator.pushReplacementNamed(context, '/signup');
                           },
                       ),

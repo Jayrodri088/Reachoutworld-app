@@ -46,7 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _fetchUserData() async {
-    const String url = 'http://10.11.0.106/reachoutworlddc/dashboard.php'; // Your backend URL
+    const String url = 'http://apps.qubators.biz/reachoutworlddc/dashboard.php'; // Your backend URL
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -80,13 +80,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
+        // Update the profile image locally, even if the upload fails
+        _profileImageUrl = _imageFile!.path;
       });
       await _uploadProfileImage(_imageFile!);
     }
   }
 
   Future<void> _uploadProfileImage(File image) async {
-    const url = 'http://10.11.0.106/reachoutworlddc/profile.php'; // Your backend URL
+    const url = 'http://apps.qubators.biz/reachoutworlddc/profile.php'; // Your backend URL
     final request = http.MultipartRequest('POST', Uri.parse(url));
     request.files.add(await http.MultipartFile.fromPath('profile_picture', image.path));
     request.fields['user_id'] = widget.userId;
@@ -243,7 +245,7 @@ class DashboardContent extends StatelessWidget {
                 onTap: pickImageFunction, // Use the passed function
                 child: CircleAvatar(
                   radius: screenWidth * 0.1,
-                  backgroundImage: NetworkImage(profileImageUrl),
+                  backgroundImage: FileImage(File(profileImageUrl)), // Updated to use FileImage
                 ),
               ),
               SizedBox(width: screenWidth * 0.03),
@@ -300,7 +302,7 @@ class DashboardContent extends StatelessWidget {
                 _buildGridItem(context, 'assets/icon/statistics.png',
                     'Statistics', const StatisticsScreen()),
                 _buildGridItem(context, 'assets/icon/capture.png',
-                    'Media Capture', const CameraScreen()),
+                    'Media Capture', CameraScreen(userId: int.parse(userId))),
               ],
             ),
           ),

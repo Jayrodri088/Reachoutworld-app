@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 
 class ApiService {
-  final String baseUrl = 'http://10.11.0.106/reachoutworlddc'; // Your live server URL
+  final String baseUrl = 'http://apps.qubators.biz/reachoutworlddc'; // Your live server URL
 
   Future<Map<String, dynamic>> registerUser(
       String userId, String name, String email, String phone, String country) async {

@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'Sqflite/media_database.dart'; // Import your database helper
+import 'sign_in.dart'; // Adjust the import path according to your project structure
 
 class RecentActivitiesScreen extends StatefulWidget {
+  const RecentActivitiesScreen({super.key});
+
   @override
   _RecentActivitiesScreenState createState() => _RecentActivitiesScreenState();
 }
 
 class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
   bool isDataCaptureSelected = true;
+  List<Map<String, dynamic>> mediaList = []; // List to hold media data
+  final DatabaseHelper _dbHelper = DatabaseHelper(); // Initialize DatabaseHelper
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +29,7 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                      height:
-                          screenHeight * 0.075), // Adjust height dynamically
+                  SizedBox(height: screenHeight * 0.075),
                   // Search bar with filter button
                   Row(
                     children: [
@@ -50,7 +54,7 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
                           // Handle filter button press
                         },
                         icon: Image.asset(
-                          'assets/icon/Filter.png', // Replace with your filter icon path
+                          'assets/icon/Filter.png',
                           width: screenWidth * 0.12,
                           height: screenWidth * 0.12,
                         ),
@@ -96,6 +100,7 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
                             onPressed: () {
                               setState(() {
                                 isDataCaptureSelected = false;
+                                _loadMediaData(); // Load media data when Media Capture is selected
                               });
                             },
                             child: Text(
@@ -114,13 +119,72 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.04),
-                  // Placeholder for additional content
-                  Center(
-                    child: Text(
-                      'No History Yet',
-                      style: TextStyle(fontSize: screenWidth * 0.05),
-                    ),
-                  ),
+                  // Display the recent activities in tabular form if Data Capture is selected
+                  isDataCaptureSelected
+                      ? Expanded(
+                          child: recentActivities.isNotEmpty
+                              ? SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: DataTable(
+                                    columns: const [
+                                      DataColumn(label: Text('Name')),
+                                      DataColumn(label: Text('Email')),
+                                      DataColumn(label: Text('Phone')),
+                                      DataColumn(label: Text('Country')),
+                                      DataColumn(label: Text('Date')),
+                                    ],
+                                    rows: recentActivities.map((activity) {
+                                      return DataRow(
+                                        cells: [
+                                          DataCell(Text(activity['name'])),
+                                          DataCell(Text(activity['email'])),
+                                          DataCell(Text(activity['phone'])),
+                                          DataCell(Text(activity['country'])),
+                                          DataCell(Text(activity['created_at'])),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  ),
+                                )
+                              : Center(
+                                  child: Text(
+                                    'No Recent Activities Found',
+                                    style: TextStyle(
+                                      fontSize: screenWidth * 0.05,
+                                    ),
+                                  ),
+                                ),
+                        )
+                      : Expanded(
+                          child: mediaList.isNotEmpty
+                              ? SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: DataTable(
+                                    columns: const [
+                                      DataColumn(label: Text('File Path')),
+                                      DataColumn(label: Text('Type')),
+                                      DataColumn(label: Text('Timestamp')), // New timestamp column
+                                    ],
+                                    rows: mediaList.map((media) {
+                                      return DataRow(
+                                        cells: [
+                                          DataCell(Text(media['file_path'])),
+                                          DataCell(Text(media['media_type'])),
+                                          DataCell(Text(media['timestamp'])), // Display timestamp
+                                        ],
+                                      );
+                                    }).toList(),
+                                  ),
+                                )
+                              : Center(
+                                  child: Text(
+                                    'No Media Captured Yet',
+                                    style: TextStyle(
+                                      fontSize: screenWidth * 0.05,
+                                    ),
+                                  ),
+                                ),
+                        ),
                 ],
               ),
             ),
@@ -134,7 +198,7 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
                 children: [
                   IconButton(
                     icon: Image.asset(
-                      'assets/arrow.png', // Replace with your image path
+                      'assets/arrow.png',
                       width: screenWidth * 0.09,
                       height: screenWidth * 0.09,
                     ),
@@ -151,7 +215,7 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
                   ),
                   IconButton(
                     icon: Image.asset(
-                      'assets/icon/settings_1.png', // Replace with your settings icon path
+                      'assets/icon/settings_1.png',
                       width: screenWidth * 0.1,
                       height: screenWidth * 0.1,
                     ),
@@ -166,5 +230,18 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _loadMediaData() async {
+    try {
+      final data = await _dbHelper.getMedia();
+      setState(() {
+        mediaList = data;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load media: $e')),
+      );
+    }
   }
 }

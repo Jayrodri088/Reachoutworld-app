@@ -1,7 +1,14 @@
-import 'package:flutter/material.dart';
-import 'enter_new_password_screen.dart'; // Import the Enter New Password Screen
+import 'dart:convert'; // For encoding and decoding JSON
+import 'dart:io'; // For checking the platform
+import 'package:flutter/cupertino.dart'; // For CupertinoAlertDialog
+import 'package:flutter/material.dart'; // For AlertDialog and other widgets
+import 'package:http/http.dart' as http;  // Import to check the platform
+// import 'enter_new_password_screen.dart';
+import 'sign_in.dart'; // Import your login screen
 
 class PasswordRecoveryScreen extends StatefulWidget {
+  const PasswordRecoveryScreen({super.key});
+
   @override
   _PasswordRecoveryScreenState createState() => _PasswordRecoveryScreenState();
 }
@@ -9,11 +16,108 @@ class PasswordRecoveryScreen extends StatefulWidget {
 class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     super.dispose();
+  }
+
+Future<void> _recoverPassword() async {
+  setState(() {
+    _isLoading = true;
+  });
+
+  final email = _emailController.text.trim();
+  const url = 'http://apps.qubators.biz/reachoutworlddc/forgot_password.php';
+
+  try {
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'email': email}),
+    );
+
+    final responseData = json.decode(response.body);
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 200 && responseData['status'] == 'success') {
+      _showAlertDialog(
+        title: 'Success',
+        message: 'We have sent you an email. Please check your inbox.',
+        buttonText: 'Login',
+        onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LoginScreen(),
+            ),
+          );
+        },
+      );
+    } else {
+      _showAlertDialog(
+        title: 'User Not Found',
+        message: responseData['message'] ?? 'No account found with that email address.',
+        buttonText: 'OK',
+        onPressed: () {
+          Navigator.of(context).pop();
+        },
+      );
+    }
+  } catch (e) {
+    print('Error during password recovery: $e');
+    _showAlertDialog(
+      title: 'Error',
+      message: 'Failed to send recovery email. Please try again later.',
+      buttonText: 'OK',
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
+  }
+}
+
+  void _showAlertDialog({required String title, required String message, required String buttonText, required VoidCallback onPressed}) {
+    if (Platform.isIOS) {
+      showCupertinoDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CupertinoAlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              CupertinoDialogAction(
+                onPressed: onPressed,
+                child: Text(buttonText),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: onPressed,
+                child: Text(buttonText),
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   @override
@@ -77,6 +181,12 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        return null;
+                      },
                     ),
                     SizedBox(
                         height:
@@ -84,17 +194,13 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            // Handle password recovery
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EnterNewPasswordScreen(),
-                              ),
-                            );
-                          }
-                        },
+                        onPressed: _isLoading
+                            ? null
+                            : () {
+                                if (_formKey.currentState!.validate()) {
+                                  _recoverPassword();
+                                }
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange,
                           shape: RoundedRectangleBorder(
@@ -105,14 +211,18 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
                               screenHeight *
                                   0.07), // Adjust button height dynamically
                         ),
-                        child: Text(
-                          'Next',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: screenWidth *
-                                0.04, // Adjust font size dynamically
-                          ),
-                        ),
+                        child: _isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.black,
+                              )
+                            : Text(
+                                'Next',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: screenWidth *
+                                      0.04, // Adjust font size dynamically
+                                ),
+                              ),
                       ),
                     ),
                   ],

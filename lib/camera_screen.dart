@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:camera/camera.dart';
-import 'package:data_app/video_preview_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'gallery_screen.dart';
 import 'preview_screen.dart';
 
 class CameraScreen extends StatefulWidget {
-  const CameraScreen({super.key});
+  final int userId; // Add userId parameter
+
+  const CameraScreen({super.key, required this.userId}); // Update constructor
 
   @override
   _CameraScreenState createState() => _CameraScreenState();
@@ -116,6 +117,7 @@ class _CameraScreenState extends State<CameraScreen> {
           builder: (context) => PreviewScreen(
             mediaPath: imagePath,
             mediaType: 'image',
+            userId: widget.userId, // Pass userId here
             onDelete: () {
               Navigator.pop(context); // Go back to camera screen
               File(imagePath).deleteSync(); // Delete the image file
@@ -155,52 +157,53 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
-Future<void> _stopVideoRecording() async {
-  if (!_controller.value.isRecordingVideo) {
-    return;
-  }
+  Future<void> _stopVideoRecording() async {
+    if (!_controller.value.isRecordingVideo) {
+      return;
+    }
 
-  try {
-    await _initializeControllerFuture;
+    try {
+      await _initializeControllerFuture;
 
-    final video = await _controller.stopVideoRecording();
+      final video = await _controller.stopVideoRecording();
 
-    final directory = await getApplicationDocumentsDirectory();
-    final videoPath =
-        '${directory.path}/${DateTime.now().millisecondsSinceEpoch}.mp4';
-    await video.saveTo(videoPath);
+      final directory = await getApplicationDocumentsDirectory();
+      final videoPath =
+          '${directory.path}/${DateTime.now().millisecondsSinceEpoch}.mp4';
+      await video.saveTo(videoPath);
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => VideoPreviewScreen(
-          videoPath: videoPath,
-          onDelete: () {
-            Navigator.pop(context); // Go back to camera screen
-            File(videoPath).deleteSync(); // Delete the video file
-          },
-          onSave: () {
-            setState(() {
-              _videoPaths.add(videoPath);
-            });
-            Navigator.pop(context); // Go back to camera screen
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Video saved to gallery')),
-            );
-          },
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PreviewScreen(
+            mediaPath: videoPath,
+            mediaType: 'video',
+            userId: widget.userId, // Pass userId here
+            onDelete: () {
+              Navigator.pop(context); // Go back to camera screen
+              File(videoPath).deleteSync(); // Delete the video file
+            },
+            onSave: () {
+              setState(() {
+                _videoPaths.add(videoPath);
+              });
+              Navigator.pop(context); // Go back to camera screen
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Video saved to gallery')),
+              );
+            },
+          ),
         ),
-      ),
-    );
+      );
 
-    setState(() {
-      _isRecording = false;
-      _isVideoMode = false; // Exit video mode after recording
-    });
-  } catch (e) {
-    print(e);
+      setState(() {
+        _isRecording = false;
+        _isVideoMode = false; // Exit video mode after recording
+      });
+    } catch (e) {
+      print(e);
+    }
   }
-}
-
 
   void _handleScaleStart(ScaleStartDetails details) {
     _baseScale = _currentZoomLevel;
@@ -242,9 +245,8 @@ Future<void> _stopVideoRecording() async {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => GalleryScreen(
-                              imagePaths: _imagePaths,
-                              videoPaths: _videoPaths,
+                            builder: (context) => const GalleryScreen(
+                              
                             ),
                           ),
                         );

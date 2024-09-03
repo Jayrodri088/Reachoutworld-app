@@ -1,16 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import 'Sqflite/media_database.dart'; // Import the database helper
 import 'image_details_screen.dart';
 
 class GalleryScreen extends StatefulWidget {
-  final List<String> imagePaths;
-  final List<String> videoPaths;
-
-  const GalleryScreen({
-    Key? key,
-    required this.imagePaths,
-    required this.videoPaths,
-  }) : super(key: key);
+  const GalleryScreen({Key? key}) : super(key: key);
 
   @override
   _GalleryScreenState createState() => _GalleryScreenState();
@@ -19,15 +13,38 @@ class GalleryScreen extends StatefulWidget {
 class _GalleryScreenState extends State<GalleryScreen> {
   List<String> imagePaths = [];
   List<String> videoPaths = [];
+  final DatabaseHelper _dbHelper = DatabaseHelper(); // Initialize DatabaseHelper
+
+  bool isSelectionMode = false;
+  List<String> selectedPaths = [];
 
   @override
   void initState() {
     super.initState();
-    imagePaths = widget.imagePaths;
-    videoPaths = widget.videoPaths;
+    _loadMediaFromDatabase();
   }
 
-  void _deleteMedia(String mediaPath, String mediaType) {
+  Future<void> _loadMediaFromDatabase() async {
+    try {
+      final mediaList = await _dbHelper.getMedia();
+      setState(() {
+        imagePaths = mediaList
+            .where((media) => media['media_type'] == 'image')
+            .map<String>((media) => media['file_path'] as String)
+            .toList();
+        videoPaths = mediaList
+            .where((media) => media['media_type'] == 'video')
+            .map<String>((media) => media['file_path'] as String)
+            .toList();
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load media: $e')),
+      );
+    }
+  }
+
+  void _deleteMedia(String mediaPath, String mediaType) async {
     setState(() {
       if (mediaType == 'image') {
         imagePaths.remove(mediaPath);
@@ -35,7 +52,69 @@ class _GalleryScreenState extends State<GalleryScreen> {
         videoPaths.remove(mediaPath);
       }
     });
-    File(mediaPath).deleteSync();
+
+    try {
+      final media = await _dbHelper.getMedia();
+      final mediaId = media.firstWhere((item) => item['file_path'] == mediaPath)['id'];
+
+      // Delete from the database
+      await _dbHelper.deleteMedia(mediaId);
+
+      // Delete from the local file system
+      File(mediaPath).deleteSync();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete media: $e')),
+      );
+    }
+  }
+
+  void _deleteSelectedMedia() async {
+    try {
+      for (var mediaPath in selectedPaths) {
+        final mediaType = imagePaths.contains(mediaPath) ? 'image' : 'video';
+        final media = await _dbHelper.getMedia();
+        final mediaId = media.firstWhere((item) => item['file_path'] == mediaPath)['id'];
+
+        // Delete from the database
+        await _dbHelper.deleteMedia(mediaId);
+
+        // Delete from the local file system
+        File(mediaPath).deleteSync();
+
+        // Update UI
+        setState(() {
+          if (mediaType == 'image') {
+            imagePaths.remove(mediaPath);
+          } else {
+            videoPaths.remove(mediaPath);
+          }
+        });
+      }
+      // Clear selection after deletion
+      setState(() {
+        selectedPaths.clear();
+        isSelectionMode = false;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete media: $e')),
+      );
+    }
+  }
+
+  void _toggleSelection(String mediaPath) {
+    setState(() {
+      if (selectedPaths.contains(mediaPath)) {
+        selectedPaths.remove(mediaPath);
+        if (selectedPaths.isEmpty) {
+          isSelectionMode = false;
+        }
+      } else {
+        selectedPaths.add(mediaPath);
+        isSelectionMode = true;
+      }
+    });
   }
 
   void _saveEditedImage(String editedImagePath) {
@@ -52,86 +131,119 @@ class _GalleryScreenState extends State<GalleryScreen> {
     ];
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: Image.asset(
-            'assets/arrow.png', // Replace with your back arrow image path
-            width: 30,
-            height: 30,
-          ),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        title: const Text(
-          'Gallery',
-          style: TextStyle(color: Colors.black),
+        leading: isSelectionMode
+            ? IconButton(
+                icon: const Icon(Icons.close, color: Colors.black),
+                onPressed: () {
+                  setState(() {
+                    isSelectionMode = false;
+                    selectedPaths.clear();
+                  });
+                },
+              )
+            : IconButton(
+                icon: Image.asset(
+                  'assets/arrow.png', // Replace with your back arrow image path
+                  width: 30,
+                  height: 30,
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+        title: Text(
+          isSelectionMode
+              ? '${selectedPaths.length} selected'
+              : 'Gallery',
+          style: const TextStyle(color: Colors.black),
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: Image.asset(
-              'assets/icon/settings_1.png', // Replace with your settings image path
-              width: 30,
-              height: 30,
+          if (isSelectionMode)
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.black),
+              onPressed: _deleteSelectedMedia,
             ),
-            onPressed: () {
-              // Handle settings icon press
-            },
-          ),
         ],
       ),
-      body: GridView.builder(
+      body: ListView.builder(
         padding: const EdgeInsets.all(8.0),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 8.0,
-          mainAxisSpacing: 8.0,
-        ),
         itemCount: mediaPaths.length,
         itemBuilder: (context, index) {
           final media = mediaPaths[index];
           final mediaPath = media['path']!;
           final mediaType = media['type']!;
 
+          final isSelected = selectedPaths.contains(mediaPath);
+
           return GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ImageDetailsScreen(
-                    mediaPath: mediaPath,
-                    mediaType: mediaType,
-                    onDelete: () {
-                      _deleteMedia(mediaPath, mediaType);
-                    },
-                    onSave: (editedImagePath) {
-                      _saveEditedImage(editedImagePath);
-                    },
+              if (isSelectionMode) {
+                _toggleSelection(mediaPath);
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ImageDetailsScreen(
+                      mediaPath: mediaPath,
+                      mediaType: mediaType,
+                      onDelete: () {
+                        _deleteMedia(mediaPath, mediaType);
+                      },
+                      onSave: (editedImagePath) {
+                        _saveEditedImage(editedImagePath);
+                      },
+                    ),
+                  ),
+                );
+              }
+            },
+            onLongPress: () {
+              _toggleSelection(mediaPath);
+            },
+            child: Stack(
+              children: [
+                Card(
+                  elevation: 4,
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(8.0),
+                    leading: mediaType == 'image'
+                        ? Image.file(
+                            File(mediaPath),
+                            width: 70,
+                            height: 70,
+                            fit: BoxFit.cover,
+                          )
+                        : const Icon(
+                            Icons.videocam,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
+                    title: Text(
+                      mediaPath.split('/').last, // Display the filename
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
-              );
-            },
-            child: Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: mediaType == 'image'
-                    ? Image.file(
-                        File(mediaPath),
-                        fit: BoxFit.cover,
-                      )
-                    : Icon(
-                        Icons.videocam,
-                        size: 80,
-                        color: Colors.grey,
-                      ),
-              ),
+                if (isSelected)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Icon(
+                      Icons.check_circle,
+                      color: Colors.blue,
+                      size: 30,
+                    ),
+                  ),
+              ],
             ),
           );
         },

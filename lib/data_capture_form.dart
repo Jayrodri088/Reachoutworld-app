@@ -2,9 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'api/api_service.dart';
+import 'sign_in.dart';
+import 'api/recent_activities_api_service.dart';
 
 class DataCaptureForm extends StatefulWidget {
-    final String userId; // Accept user_id as an argument
+  final String userId; // Accept user_id as an argument
 
   const DataCaptureForm({super.key, required this.userId});
 
@@ -19,57 +21,106 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _countryController = TextEditingController();
+  final RecentActivitiesApiService recentActivitiesApiService =
+      RecentActivitiesApiService();
 
   final List<String> _countries = [
-    'Nigeria',
-    'United States',
-    'United Kingdom',
-    'Canada',
-    'Australia'
+    "Afghanistan", "Albania", "Algeria", "Andorra", "Angola",
+    "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
+    "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados",
+    "Belarus", "Belgium", "Belize", "Benin", "Bhutan",
+    "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei",
+    "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia",
+    "Cameroon", "Canada", "Central African Republic", "Chad", "Chile",
+    "China", "Colombia", "Comoros", "Congo, Democratic Republic of the",
+    "Congo, Republic of the",
+    "Costa Rica", "Cote d'Ivoire", "Croatia", "Cuba", "Cyprus",
+    "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic",
+    "East Timor (Timor-Leste)", "Ecuador", "Egypt", "El Salvador",
+    "Equatorial Guinea",
+    "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji",
+    "Finland", "France", "Gabon", "Gambia", "Georgia",
+    "Germany", "Ghana", "Greece", "Grenada", "Guatemala",
+    "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras",
+    "Hungary", "Iceland", "India", "Indonesia", "Iran",
+    "Iraq", "Ireland", "Israel", "Italy", "Jamaica",
+    "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati",
+    "Korea, North", "Korea, South", "Kosovo", "Kuwait", "Kyrgyzstan",
+    "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia",
+    "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar",
+    "Malawi", "Malaysia", "Maldives", "Mali", "Malta",
+    "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia",
+    "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco",
+    "Mozambique", "Myanmar (Burma)", "Namibia", "Nauru", "Nepal",
+    "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria",
+    "North Macedonia", "Norway", "Oman", "Pakistan", "Palau",
+    "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru",
+    "Philippines", "Poland", "Portugal", "Qatar", "Romania",
+    "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia",
+    "Saint Vincent and the Grenadines",
+    "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal",
+    "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia",
+    "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Sudan",
+    "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden",
+    "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania",
+    "Thailand", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia",
+    "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine",
+    "United Arab Emirates", "United Kingdom", "United States", "Uruguay",
+    "Uzbekistan",
+    "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen",
+    "Zambia", "Zimbabwe"
     // Add more countries as needed
   ];
 
-Future<void> _captureData() async {
-  if (_formKey.currentState!.validate()) {
-    try {
-      // Print the data being sent for debugging purposes
-      print('Sending data: ${{
-        'user_id': widget.userId,
-        'name': _nameController.text,
-        'email': _emailController.text,
-        'phone': _phoneController.text,
-        'country': _countryController.text,
-      }}');
+  Future<void> _captureData() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        // Print the data being sent for debugging purposes
+        print('Sending data: ${{
+          'user_id': widget.userId,
+          'name': _nameController.text,
+          'email': _emailController.text,
+          'phone': _phoneController.text,
+          'country': _countryController.text,
+        }}');
 
-      final response = await apiService.registerUser(
-        widget.userId, // Pass user_id to the API service
-        _nameController.text,
-        _emailController.text,
-        _phoneController.text,
-        _countryController.text,
-      );
-
-      // Debug the response
-      print('Response from server: $response');
-
-      if (response['status'] == 'success') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Data captured successfully')),
+        final response = await apiService.registerUser(
+          widget.userId, // Pass user_id to the API service
+          _nameController.text,
+          _emailController.text,
+          _phoneController.text,
+          _countryController.text,
         );
-      } else {
+
+        // Debug the response
+        print('Response from server: $response');
+
+        if (response['status'] == 'success') {
+          List<Map<String, dynamic>> updatedActivities =
+              await recentActivitiesApiService
+                  .getRecentActivities(widget.userId);
+
+          // Override the global recentActivities list
+          setState(() {
+            recentActivities = updatedActivities;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data captured successfully')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(response['message'] ?? 'Unknown error')),
+          );
+        }
+      } catch (e) {
+        // Print and display the error
+        print('Error during data capture: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response['message'] ?? 'Unknown error')),
+          SnackBar(content: Text('Failed to capture data. Error: $e')),
         );
       }
-    } catch (e) {
-      // Print and display the error
-      print('Error during data capture: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to capture data. Error: $e')),
-      );
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -158,28 +209,29 @@ Future<void> _captureData() async {
                   },
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _countryController, // Added Controller
-                  decoration: InputDecoration(
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
                     labelText: 'Country of Residence',
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.flag),
-                    suffixIcon: PopupMenuButton<String>(
-                      icon: const Icon(Icons.arrow_drop_down),
-                      onSelected: (String value) {
-                        _countryController.text = value;
-                      },
-                      itemBuilder: (BuildContext context) {
-                        return _countries
-                            .map<PopupMenuItem<String>>((String value) {
-                          return PopupMenuItem(child: Text(value), value: value);
-                        }).toList();
-                      },
-                    ),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.flag),
                   ),
+                  value: _countries.contains(_countryController.text)
+                      ? _countryController.text
+                      : null,
+                  items: _countries.map((String country) {
+                    return DropdownMenuItem<String>(
+                      value: country,
+                      child: Text(country),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _countryController.text = newValue!;
+                    });
+                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your country of residence';
+                      return 'Please select your country of residence';
                     }
                     return null;
                   },
@@ -189,8 +241,8 @@ Future<void> _captureData() async {
                   onPressed: _captureData,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 16),
                   ),
                   child: const Text('Submit', style: TextStyle(fontSize: 16)),
                 ),
