@@ -27,7 +27,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           ),
           Column(
             children: [
-              SizedBox(height: screenHeight * 0.1), // Adjust height dynamically
+              SizedBox(height: screenHeight * 0.17), // Adjust height dynamically
               const Spacer(),
               Image.asset(
                 'assets/ROW_1_logo.png', // Replace with your logo image path
@@ -43,7 +43,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Welcome to Reach Out World Day!',
+                      ' Reach Out World Day',
+                      style: TextStyle(
+                        fontSize:
+                            screenWidth * 0.06, // Adjust font size dynamically
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      ' Data Capture App',
                       style: TextStyle(
                         fontSize:
                             screenWidth * 0.06, // Adjust font size dynamically
@@ -56,7 +66,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         height:
                             screenHeight * 0.01), // Adjust height dynamically
                     Text(
-                      'Join us in capturing and sharing data to make a positive impact',
+                      'Sign up to start capturing data and  moments on the road to the grand Reach Out World Day!',
+                      style: TextStyle(
+                        fontSize:
+                            screenWidth * 0.04, // Adjust font size dynamically
+                        color: Colors.black,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      'sharing data to make a positive impact',
                       style: TextStyle(
                         fontSize:
                             screenWidth * 0.04, // Adjust font size dynamically
@@ -93,10 +112,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   0.01), // Adjust margin dynamically
                           decoration: BoxDecoration(
                             color: _isSignInHovered
-                                ? Colors.orange
-                                : Colors.orange,
+                                ? Color.fromARGB(255, 32, 55, 187)
+                                : Color.fromARGB(255, 32, 55, 187),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.orange),
+                            border: Border.all(
+                              color: Color.fromARGB(255, 32, 55, 187),
+                            ),
                           ),
                           child: Center(
                             child: Text(
@@ -140,10 +161,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   0.01), // Adjust margin dynamically
                           decoration: BoxDecoration(
                             color: _isSignUpHovered
-                                ? Colors.orange
+                                ? Color.fromARGB(255, 32, 55, 187)
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.orange),
+                            border: Border.all(
+                              color: Color.fromARGB(255, 32, 55, 187),
+                            ),
                           ),
                           child: Center(
                             child: Text(
@@ -151,7 +174,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               style: TextStyle(
                                 color: _isSignUpHovered
                                     ? Colors.black
-                                    : Colors.orange,
+                                    : Color.fromARGB(255, 32, 55, 187),
                                 fontSize: screenWidth *
                                     0.04, // Adjust font size dynamically
                                 fontWeight: FontWeight.bold,
@@ -171,7 +194,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       child: const Text(
                         '',
                         style: TextStyle(
-                          color: Colors.orange,
+                          color: Color.fromARGB(255, 32, 55, 187),
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),

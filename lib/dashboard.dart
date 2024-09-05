@@ -90,8 +90,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _uploadProfileImage(File image) async {
     const url = 'http://apps.qubators.biz/reachoutworlddc/profile.php'; // Your backend URL
     final request = http.MultipartRequest('POST', Uri.parse(url));
-    request.files.add(await http.MultipartFile.fromPath('profile_picture', image.path));
     request.fields['user_id'] = widget.userId;
+    request.files.add(await http.MultipartFile.fromPath('profile_picture', image.path));
 
     final response = await request.send();
 
@@ -121,6 +121,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       key: _scaffoldKey,
       drawer: Sidebar(
         userName: _userName ?? 'Loading...',
@@ -143,6 +144,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         items: [
@@ -151,7 +153,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _buildBottomNavigationBarItem('assets/icon/history_1.png', 'History', 2),
           _buildBottomNavigationBarItem('assets/icon/settings_3.png', 'Settings', 3),
         ],
-        selectedItemColor: Colors.orange,
+        selectedItemColor: Color.fromARGB(255, 32, 55, 187),
         unselectedItemColor: Colors.grey,
       ),
     );
@@ -164,7 +166,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ? Container(
               padding: const EdgeInsets.all(8.0),
               decoration: const BoxDecoration(
-                color: Color.fromARGB(172, 245, 151, 10),
+                color: Color.fromARGB(255, 32, 55, 187),
                 shape: BoxShape.circle,
               ),
               child: Image.asset(
@@ -276,7 +278,7 @@ class DashboardContent extends StatelessWidget {
           width: screenWidth,
           height: screenHeight * 0.02,
           decoration: const BoxDecoration(
-            color: Color.fromARGB(204, 245, 151, 10),
+            color: Color.fromARGB(255, 32, 55, 187),
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(50),
               topRight: Radius.circular(50),

@@ -21,11 +21,12 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
     final double screenHeight = screenSize.height;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Stack(
           children: [
             Padding(
-              padding: EdgeInsets.all(screenWidth * 0.06),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06, vertical: screenHeight * 0.014),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -65,7 +66,7 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
                   // Toggle buttons for Data Capture and Media Capture
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.orange[100],
+                      color: Colors.blue[200],
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                     child: Row(
@@ -82,7 +83,7 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
                               'Data Capture',
                               style: TextStyle(
                                 color: isDataCaptureSelected
-                                    ? Colors.orange
+                                    ? Color.fromARGB(255, 32, 55, 187)
                                     : Colors.grey,
                                 fontWeight: FontWeight.bold,
                                 fontSize: screenWidth * 0.04,
@@ -93,7 +94,7 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
                         Container(
                           height: screenHeight * 0.04,
                           width: 1,
-                          color: Colors.orange,
+                          color: Color.fromARGB(255, 32, 55, 187),
                         ),
                         Expanded(
                           child: TextButton(
@@ -108,7 +109,7 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
                               style: TextStyle(
                                 color: isDataCaptureSelected
                                     ? Colors.grey
-                                    : Colors.orange,
+                                    : Color.fromARGB(255, 32, 55, 187),
                                 fontWeight: FontWeight.bold,
                                 fontSize: screenWidth * 0.04,
                               ),
@@ -196,16 +197,17 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    icon: Image.asset(
-                      'assets/arrow.png',
-                      width: screenWidth * 0.09,
-                      height: screenWidth * 0.09,
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
+                  // IconButton(
+                  //   icon: Image.asset(
+                  //     'assets/arrow.png',
+                  //     width: screenWidth * 0.09,
+                  //     height: screenWidth * 0.09,
+                  //   ),
+                  //   onPressed: () {
+                  //     Navigator.pop(context);
+                  //   },
+                  // ),
+                  SizedBox(width: screenWidth * 0.09),
                   Text(
                     'History',
                     style: TextStyle(
@@ -213,16 +215,17 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  IconButton(
-                    icon: Image.asset(
-                      'assets/icon/settings_1.png',
-                      width: screenWidth * 0.1,
-                      height: screenWidth * 0.1,
-                    ),
-                    onPressed: () {
-                      // Handle settings icon press
-                    },
-                  ),
+                  SizedBox(width: screenWidth * 0.09),
+                  // IconButton(
+                  //   icon: Image.asset(
+                  //     'assets/icon/settings_1.png',
+                  //     width: screenWidth * 0.089,
+                  //     height: screenWidth * 0.089,
+                  //   ),
+                  //   onPressed: () {
+                  //     // Handle settings icon press
+                  //   },
+                  // ),
                 ],
               ),
             ),

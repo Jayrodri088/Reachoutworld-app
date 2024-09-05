@@ -1,25 +1,30 @@
+import 'package:data_app/feedback_screen.dart';
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 class Sidebar extends StatelessWidget {
   final String userName;
   final String userCountry;
-  final String profileImage;
+  final String profileImage; // This could be an asset or a file path
 
-  const Sidebar(
-      {super.key, required this.userName,
-      required this.userCountry,
-      required this.profileImage});
+  const Sidebar({
+    super.key,
+    required this.userName,
+    required this.userCountry,
+    required this.profileImage,
+  });
 
   @override
   Widget build(BuildContext context) {
+    bool isAssetImage = !profileImage.startsWith('/'); // Check if it's an asset image or a file path
+
     return Drawer(
       child: Stack(
         children: [
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(
-                    'assets/overlay_1.png'), // Replace with your background image path
+                image: AssetImage('assets/overlay_1.png'), // Replace with your background image path
                 fit: BoxFit.cover,
               ),
             ),
@@ -46,7 +51,9 @@ class Sidebar extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundImage: AssetImage(profileImage),
+                      backgroundImage: isAssetImage
+                          ? AssetImage(profileImage) as ImageProvider
+                          : FileImage(File(profileImage)),
                     ),
                     const SizedBox(width: 5),
                     Column(
@@ -54,24 +61,14 @@ class Sidebar extends StatelessWidget {
                       children: [
                         Text(
                           userName,
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 18),
+                          style: const TextStyle(color: Colors.white, fontSize: 18),
                         ),
                         Text(
                           userCountry,
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 14),
+                          style: const TextStyle(color: Colors.white, fontSize: 14),
                         ),
                       ],
                     ),
-                    // const Spacer(),
-                    // IconButton(
-                    //   icon: Image.asset('assets/icon/edit.png',
-                    //       width: 32, height: 32), // Adjust the size here
-                    //   onPressed: () {
-                    //     // Handle edit profile icon press
-                    //   },
-                    // ),
                   ],
                 ),
               ),
@@ -79,25 +76,19 @@ class Sidebar extends StatelessWidget {
                 child: ListView(
                   padding: EdgeInsets.zero,
                   children: <Widget>[
-                    const SizedBox(
-                      height: 40,
+                    const SizedBox(height: 40),
+                    _buildDrawerItem(
+                      'assets/icon/feedback.png',
+                      'Feedback',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const FeedbackScreen(),
+                          ),
+                        );
+                      },
                     ),
-                    // _buildDrawerItem(
-                    //     'assets/icon/account.png', 'Account Settings',
-                    //     onTap: () {}),
-                    // _buildDrawerItem('assets/icon/link_account.png',
-                    //     'Linked Social Media Accounts',
-                    //     onTap: () {}),
-                    // _buildDrawerItem(
-                    //     'assets/icon/leaderboard.png', 'Leaderboard',
-                    //     onTap: () {}),
-                    _buildDrawerItem('assets/icon/feedback.png', 'Feedback',
-                        onTap: () {}),
-                    // _buildDrawerItem(
-                    //     'assets/icon/settings.png',  'Settings',
-                    //     onTap: () {}),
-                    // _buildDrawerItem('assets/icon/delete.png', 'Deactivate Account',
-                    //     onTap: () {}),
                     _buildDrawerItem(
                       'assets/icon/logout.png',
                       'Log Out',
@@ -127,7 +118,7 @@ class Sidebar extends StatelessWidget {
       title: Text(
         title,
         style: TextStyle(
-            color: isLogout ? Colors.orange : Colors.black,
+            color: isLogout ? const Color.fromARGB(255, 32, 55, 187) : Colors.black,
             fontSize: 15,
             fontWeight: FontWeight.bold),
       ),

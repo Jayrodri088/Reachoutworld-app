@@ -80,7 +80,7 @@ class _SplashScreenState extends State<SplashScreen>
     final double screenHeight = screenSize.height;
 
     return Scaffold(
-      backgroundColor: Colors.orange,
+      backgroundColor: Color.fromARGB(255, 32, 55, 187),
       body: Center(
         child: FractionallySizedBox(
           widthFactor: 0.6, // Adjusts the logo size relative to screen width

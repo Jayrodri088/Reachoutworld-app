@@ -202,14 +202,14 @@ Future<void> _recoverPassword() async {
                                 }
                               },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
+                          backgroundColor: Color.fromARGB(255, 32, 55, 187),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                           minimumSize: Size(
                               double.infinity,
                               screenHeight *
-                                  0.07), // Adjust button height dynamically
+                                  0.05), // Adjust button height dynamically
                         ),
                         child: _isLoading
                             ? const CircularProgressIndicator(
@@ -218,7 +218,7 @@ Future<void> _recoverPassword() async {
                             : Text(
                                 'Next',
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: Colors.white,
                                   fontSize: screenWidth *
                                       0.04, // Adjust font size dynamically
                                 ),

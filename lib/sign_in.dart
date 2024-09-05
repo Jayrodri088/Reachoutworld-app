@@ -184,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(height: screenHeight * 0.01),
                 Text(
-                  'Hi! Welcome back',
+                  'Fill in your details to continue',
                   style: TextStyle(
                       fontSize: screenWidth * 0.04),
                   textAlign: TextAlign.center,
@@ -261,7 +261,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: ElevatedButton(
                           onPressed: _signIn,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
+                            backgroundColor: Color.fromARGB(255, 32, 55, 187),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
@@ -270,7 +270,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             'Sign In',
                             style: TextStyle(
                               fontSize: screenWidth * 0.04,
-                              color: Colors.black,
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -310,7 +310,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(8.0),
+                      borderRadius: BorderRadius.circular(15.0),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.grey.withOpacity(0.5),
@@ -356,7 +356,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextSpan(
                         text: 'Sign Up',
                         style: TextStyle(
-                          color: Colors.orange,
+                          color: Color.fromARGB(255, 32, 55, 187),
                           fontWeight: FontWeight.bold,
                           decoration: TextDecoration.none,
                           fontSize: screenWidth * 0.04,

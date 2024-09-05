@@ -125,6 +125,11 @@ flutter:
       - assets/icon/cancel_img.png
       - assets/icon/account.png
       - assets/icon/Filter.png
+      - assets/icon/excellent.png
+      - assets/icon/awful.png
+      - assets/icon/poor.png
+      - assets/icon/neutral.png
+      - assets/icon/fun.png
       - assets/profile_1.webp
      
       - assets/ic_launcher.png

@@ -282,16 +282,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     : ElevatedButton(
                         onPressed: _register,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
+                          backgroundColor: Color.fromARGB(255, 32, 55, 187),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
-                          minimumSize: const Size(double.infinity, 48),
+                          minimumSize: const Size(double.infinity, 42),
                         ),
                         child: Text(
                           'Sign Up',
                           style: TextStyle(
-                            color: Colors.black,
+                            color: Colors.white,
                             fontSize: screenWidth * 0.04,
                           ),
                         ),
@@ -331,7 +331,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(8.0),
+                      borderRadius: BorderRadius.circular(15.0),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.grey.withOpacity(0.5),
@@ -342,7 +342,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ],
                     ),
                     padding: EdgeInsets.symmetric(
-                        vertical: screenHeight * 0,
+                        vertical: screenHeight * 0.0000001,
                         horizontal: screenWidth * 0.04),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -383,7 +383,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       child: Text(
                         'Sign In',
                         style: TextStyle(
-                          color: Colors.orange,
+                          color: Color.fromARGB(255, 32, 55, 187),
                           fontSize: screenWidth * 0.045,
                           fontWeight: FontWeight.bold,
                         ),

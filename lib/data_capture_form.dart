@@ -107,6 +107,7 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Data captured successfully')),
           );
+          Navigator.pop(context);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(response['message'] ?? 'Unknown error')),
@@ -240,11 +241,14 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
                 ElevatedButton(
                   onPressed: _captureData,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
+                    backgroundColor: Color.fromARGB(255, 32, 55, 187),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 16),
+                        horizontal: 32, vertical: 12),
                   ),
-                  child: const Text('Submit', style: TextStyle(fontSize: 16)),
+                  child: const Text(
+                    'Submit',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
                 ),
               ],
             ),

@@ -181,7 +181,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     _canResend
                         ? 'Resend Code'
                         : 'Resend Code 00:${_start.toString().padLeft(2, '0')}',
-                    style: const TextStyle(color: Colors.orange),
+                    style: const TextStyle(color: Color.fromARGB(255, 32, 55, 187),),
                   ),
                 ),
                 SizedBox(height: screenHeight * 0.04),
@@ -194,7 +194,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
+                      backgroundColor: Color.fromARGB(255, 32, 55, 187),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
@@ -206,7 +206,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     child: Text(
                       'Verify',
                       style: TextStyle(
-                          color: Colors.black,
+                          color: Colors.white,
                           fontSize: screenWidth *
                               0.04), // Adjust font size dynamically
                     ),
@@ -242,7 +242,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
             borderSide: BorderSide(
-              color: currentNode.hasFocus ? Colors.orange : Colors.red,
+              color: currentNode.hasFocus ? Color.fromARGB(255, 32, 55, 187) : Colors.red,
               width: currentNode.hasFocus ? 2.0 : 1.0,
             ),
           ),

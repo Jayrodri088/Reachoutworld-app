@@ -133,7 +133,7 @@ class _EnterNewPasswordScreenState extends State<EnterNewPasswordScreen> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
+                          backgroundColor: Color.fromARGB(255, 32, 55, 187),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
@@ -145,7 +145,7 @@ class _EnterNewPasswordScreenState extends State<EnterNewPasswordScreen> {
                         child: Text(
                           'Submit',
                           style: TextStyle(
-                              color: Colors.black,
+                              color: Colors.white,
                               fontSize: screenWidth *
                                   0.04), // Adjust font size dynamically
                         ),
