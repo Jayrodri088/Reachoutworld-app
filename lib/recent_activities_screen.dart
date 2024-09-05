@@ -32,6 +32,7 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
                 children: [
                   SizedBox(height: screenHeight * 0.075),
                   // Search bar with filter button
+                  //JAC
                   Row(
                     children: [
                       Expanded(

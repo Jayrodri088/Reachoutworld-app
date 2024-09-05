@@ -101,6 +101,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       if (result['status'] == 'success') {
         setState(() {
+          //Done by Jay
           _profileImageUrl = result['profile_picture_url'];
         });
         ScaffoldMessenger.of(context).showSnackBar(
