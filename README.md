@@ -92,20 +92,22 @@ In the recent activities page, the user can see the recent activities of both th
 
 ### Steps
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/Jayrodri088/reachoutworld.git
-   cd reachoutworld
+### 1. **Clone the repository**:
+   
+  - git clone https://github.com/Jayrodri088/reachoutworld.git.
+  - cd reachoutworld.
 
-2.**Install dependencies**: Ensure you have Flutter and Dart installed, then run:
-    flutter pub get
+###  2. **Install dependencies**: 
+   
+  -  Ensure you have Flutter and Dart installed, then run:
+  -  flutter pub get
 
-3. **Set up the backend**:
-
+### 3. **Set up the backend**:
+    
     Set up a MySQL database using the schema required for user profiles, media uploads, and captured data.
     Ensure that the backend PHP files for handling user data, media uploads, and API services are properly configured.
     Update the URLs in the Flutter app to point to your backend API.
 
-4. **Run the app**:
-
+### 4. **Run the app**:
+    
     flutter run
