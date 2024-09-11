@@ -23,7 +23,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'media.db');
     return await openDatabase(
       path,
-      version: 3, // Update version to 3
+      version: 4, // Update version to 4
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE user_media (
@@ -31,19 +31,24 @@ class DatabaseHelper {
             user_id INTEGER NOT NULL,
             file_path TEXT NOT NULL,
             media_type TEXT NOT NULL,
-            timestamp TEXT NOT NULL
+            timestamp TEXT NOT NULL,
+            user_country TEXT,  -- New nullable column
+            user_state TEXT,    -- New nullable column
+            user_region TEXT    -- New nullable column
           )
         ''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 3) {
-          await db.execute('ALTER TABLE user_media ADD COLUMN timestamp TEXT NOT NULL');
+        if (oldVersion < 4) {
+          await db.execute('ALTER TABLE user_media ADD COLUMN user_country TEXT');
+          await db.execute('ALTER TABLE user_media ADD COLUMN user_state TEXT');
+          await db.execute('ALTER TABLE user_media ADD COLUMN user_region TEXT');
         }
       },
     );
   }
 
-  Future<void> insertMedia(int userId, String filePath, String mediaType) async {
+  Future<void> insertMedia(int userId, String filePath, String mediaType, String? userCountry, String? userState, String? userRegion) async {
     final db = await database;
     final timestamp = DateTime.now().toIso8601String(); // Get current timestamp
 
@@ -54,20 +59,26 @@ class DatabaseHelper {
         'file_path': filePath,
         'media_type': mediaType,
         'timestamp': timestamp,
+        'user_country': userCountry ?? 'N/A',  // Nullable, use 'N/A' if null
+        'user_state': userState ?? 'N/A',      // Nullable, use 'N/A' if null
+        'user_region': userRegion ?? 'N/A'     // Nullable, use 'N/A' if null
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
 
-    // Push to the backend without the timestamp
-    await _pushMediaToBackend(userId, filePath, mediaType);
+    // Push the media and location data to the backend
+    await _pushMediaToBackend(userId, filePath, mediaType, userCountry, userState, userRegion);
   }
 
-  Future<void> _pushMediaToBackend(int userId, String filePath, String mediaType) async {
+  Future<void> _pushMediaToBackend(int userId, String filePath, String mediaType, String? userCountry, String? userState, String? userRegion) async {
     var uri = Uri.parse('http://apps.qubators.biz/reachoutworlddc/media_capture.php');
     var request = http.MultipartRequest('POST', uri);
 
     request.fields['user_id'] = userId.toString();
     request.fields['media_type'] = mediaType;
+    request.fields['user_country'] = userCountry ?? 'N/A';  // Send 'N/A' if null
+    request.fields['user_state'] = userState ?? 'N/A';      // Send 'N/A' if null
+    request.fields['user_region'] = userRegion ?? 'N/A';    // Send 'N/A' if null
     request.files.add(await http.MultipartFile.fromPath('media', filePath));
 
     try {
@@ -102,4 +113,3 @@ class DatabaseHelper {
     );
   }
 }
-

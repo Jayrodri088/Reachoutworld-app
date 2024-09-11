@@ -5,45 +5,61 @@ import 'dart:async';
 class ApiService {
   final String baseUrl = 'http://apps.qubators.biz/reachoutworlddc'; // Your live server URL
 
+  // Updated method signature to accept optional location parameters
   Future<Map<String, dynamic>> registerUser(
-      String userId, String name, String email, String phone, String country) async {
+      String userId,
+      String name,
+      String email,
+      String phone,
+      String country,
+      String? userCountry,  // Nullable location parameters
+      String? userState,
+      String? userRegion) async {  // Updated from userCity to userRegion
     try {
+      // Send the POST request with JSON data
       final response = await http.post(
         Uri.parse('$baseUrl/data_capture.php'),
         headers: {
-          'Content-Type': 'application/json', // If PHP expects form data
+          'Content-Type': 'application/json', // Ensure JSON content is sent
         },
         body: json.encode(
           {
-          'user_id': userId, // Ensure this matches the input expected by your PHP backend
-          'name': name,
-          'email': email,
-          'phone': phone,
-          'country': country,
-        },
-        )
-      ).timeout(const Duration(seconds: 10)); // Set a timeout to prevent long wait times
+            'user_id': userId,
+            'name': name,
+            'email': email,
+            'phone': phone,
+            'country': country,
+            'user_country': userCountry ?? 'N/A', // If null, send 'N/A'
+            'user_state': userState ?? 'N/A',     // If null, send 'N/A'
+            'user_region': userRegion ?? 'N/A',   // Corrected to match backend expectations
+          },
+        ),
+      ).timeout(const Duration(seconds: 120)); // Set timeout for request
 
-      // Debugging the response
+      // Debugging: Print response for troubleshooting
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
 
-      // Handle response
+      // Handle the response from the server
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
 
-        // Check if the response contains a status and is successful
+        // Check if the response indicates success
         if (responseData.containsKey('status') && responseData['status'] == 'success') {
           return responseData; // Successfully captured data
         } else {
+          // Handle error message from the server
           throw Exception(responseData['message'] ?? 'Failed to capture data');
         }
       } else {
+        // Handle non-200 status codes
         throw Exception('Failed to capture data. Status code: ${response.statusCode}');
       }
     } on TimeoutException catch (_) {
+      // Handle timeout error
       throw Exception('Request timeout. Please try again.');
     } on Exception catch (e) {
+      // Handle general network or server errors
       print('Error in registerUser API call: $e');
       throw Exception('Network or server error: $e');
     }

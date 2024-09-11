@@ -1,12 +1,14 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'api/api_service.dart';
-import 'sign_in.dart';
 import 'api/recent_activities_api_service.dart';
+import 'sign_in.dart';
 
 class DataCaptureForm extends StatefulWidget {
-  final String userId; // Accept user_id as an argument
+  final String userId;
 
   const DataCaptureForm({super.key, required this.userId});
 
@@ -23,6 +25,10 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
   final TextEditingController _countryController = TextEditingController();
   final RecentActivitiesApiService recentActivitiesApiService =
       RecentActivitiesApiService();
+
+  String? _userCountry;
+  String? _userState;
+  String? _userRegion; 
 
   final List<String> _countries = [
     "Afghanistan", "Albania", "Algeria", "Andorra", "Angola",
@@ -72,27 +78,83 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
     // Add more countries as needed
   ];
 
+   // Function to get the user's location and geocode it to an address
+  Future<void> _getUserLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw 'Location services are disabled.';
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw 'Location permissions are denied.';
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw 'Location permissions are permanently denied.';
+      }
+
+      // Get the current position
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+
+      // Reverse geocode the location to get the address
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(position.latitude, position.longitude);
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        setState(() {
+          _userCountry = place.country;
+          _userState = place.administrativeArea;
+          _userRegion = place.locality;
+        });
+        print('Location: $_userCountry, $_userState, $_userRegion');
+      }
+    } catch (e) {
+      print('Failed to get location: $e');
+      setState(() {
+        _userCountry = null;
+        _userState = null;
+        _userRegion = null;
+      });
+    }
+  }
+
   Future<void> _captureData() async {
     if (_formKey.currentState!.validate()) {
       try {
-        // Print the data being sent for debugging purposes
+        // Fetch the user's location before submitting the form
+        await _getUserLocation();
+
+        // Prepare the data to be sent
         print('Sending data: ${{
           'user_id': widget.userId,
           'name': _nameController.text,
           'email': _emailController.text,
           'phone': _phoneController.text,
           'country': _countryController.text,
+          'user_country': _userCountry ?? 'N/A',
+          'user_state': _userState ?? 'N/A',
+          'user_city': _userRegion ?? 'N/A',
         }}');
 
+        // Send data to the API service
         final response = await apiService.registerUser(
-          widget.userId, // Pass user_id to the API service
+          widget.userId,
           _nameController.text,
           _emailController.text,
           _phoneController.text,
           _countryController.text,
+          _userCountry ?? 'N/A',
+          _userState ?? 'N/A',
+          _userRegion ?? 'N/A',
         );
 
-        // Debug the response
         print('Response from server: $response');
 
         if (response['status'] == 'success') {
@@ -100,7 +162,7 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
               await recentActivitiesApiService
                   .getRecentActivities(widget.userId);
 
-          // Override the global recentActivities list
+          // Update recent activities
           setState(() {
             recentActivities = updatedActivities;
           });
@@ -114,7 +176,6 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
           );
         }
       } catch (e) {
-        // Print and display the error
         print('Error during data capture: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to capture data. Error: $e')),
@@ -134,7 +195,7 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 16), // Top padding
+                const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -143,7 +204,7 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
                         'assets/arrow.png',
                         height: 30,
                         width: 30,
-                      ), // Replace with your back button image path
+                      ),
                       iconSize: 24,
                       onPressed: () {
                         Navigator.pop(context);
@@ -165,7 +226,7 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
                 ),
                 const SizedBox(height: 32),
                 TextFormField(
-                  controller: _nameController, // Added Controller
+                  controller: _nameController,
                   decoration: const InputDecoration(
                     labelText: 'Name',
                     border: OutlineInputBorder(),
@@ -180,7 +241,7 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  controller: _emailController, // Added Controller
+                  controller: _emailController,
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     border: OutlineInputBorder(),
@@ -195,7 +256,7 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  controller: _phoneController, // Added Controller
+                  controller: _phoneController,
                   keyboardType: TextInputType.phone,
                   decoration: const InputDecoration(
                     labelText: 'Phone Number',
@@ -241,7 +302,7 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
                 ElevatedButton(
                   onPressed: _captureData,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromARGB(255, 32, 55, 187),
+                    backgroundColor: const Color.fromARGB(255, 32, 55, 187),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 32, vertical: 12),
                   ),

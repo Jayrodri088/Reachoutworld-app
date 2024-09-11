@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:geolocator/geolocator.dart';  // Import for Geolocator
+import 'package:geocoding/geocoding.dart';    // Import for reverse geocoding
 import 'Sqflite/media_database.dart'; // Import the database helper
 
 class PreviewScreen extends StatefulWidget {
@@ -25,9 +27,14 @@ class PreviewScreen extends StatefulWidget {
 
 class _PreviewScreenState extends State<PreviewScreen> {
   late VideoPlayerController _videoController;
-  final DatabaseHelper _dbHelper = DatabaseHelper(); 
+  final DatabaseHelper _dbHelper = DatabaseHelper();
   bool _isVideoInitialized = false;
-  bool _isSaving = false; 
+  bool _isSaving = false;
+
+  // Variables to store location data
+  String? _userCountry;
+  String? _userState;
+  String? _userCity;
 
   @override
   void initState() {
@@ -55,6 +62,66 @@ class _PreviewScreenState extends State<PreviewScreen> {
     super.dispose();
   }
 
+  // Function to fetch user's location and geocode it
+  Future<void> _getUserLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw 'Location services are disabled.';
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw 'Location permissions are denied';
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw 'Location permissions are permanently denied';
+      }
+
+      // Get the current position
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+
+      double latitude = position.latitude;
+      double longitude = position.longitude;
+
+      // Reverse geocode the location to get country, state, and city
+      List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        setState(() {
+          _userCountry = place.country;                 // Country
+          _userState = place.administrativeArea;        // State or province
+          _userCity = place.locality;                   // City or region
+        });
+        
+        // Print the location to confirm it was successfully fetched
+        print('Location successfully fetched: Country: $_userCountry, State: $_userState, City: $_userCity');
+      } else {
+        setState(() {
+          _userCountry = 'Unknown';
+          _userState = 'Unknown';
+          _userCity = 'Unknown';
+        });
+
+        // Print in case the placemarks are empty
+        print('Location not found, using defaults: Country: $_userCountry, State: $_userState, City: $_userCity');
+      }
+    } catch (e) {
+      print('Error getting location: $e');
+      setState(() {
+        _userCountry = null;
+        _userState = null;
+        _userCity = null;
+      });
+    }
+  }
+
   Future<void> _saveMedia() async {
     setState(() {
       _isSaving = true;
@@ -70,10 +137,20 @@ class _PreviewScreenState extends State<PreviewScreen> {
         _videoController.pause();
       }
 
-      // Start the save operation
-      await _dbHelper.insertMedia(widget.userId, widget.mediaPath, widget.mediaType);
-      widget.onSave();
+      // Get the user’s location before saving
+      await _getUserLocation();
 
+      // Save media to the local database along with location
+      await _dbHelper.insertMedia(
+        widget.userId,
+        widget.mediaPath,
+        widget.mediaType,
+        _userCountry ?? 'N/A',  // Pass country, or 'N/A' if not available
+        _userState ?? 'N/A',    // Pass state, or 'N/A' if not available
+        _userCity ?? 'N/A'      // Pass city, or 'N/A' if not available
+      );
+
+      widget.onSave();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to save media: $e')),
@@ -113,7 +190,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
                   width: 80,
                 ),
                 iconSize: 20,
-                onPressed: _isSaving ? null : widget.onDelete, 
+                onPressed: _isSaving ? null : widget.onDelete,
               ),
               IconButton(
                 icon: _isSaving
