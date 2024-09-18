@@ -92,31 +92,31 @@ class _RecentActivitiesScreenState extends State<RecentActivitiesScreen> {
                             ),
                           ),
                         ),
-                        Container(
-                          height: screenHeight * 0.04,
-                          width: 1,
-                          color: Color.fromARGB(255, 32, 55, 187),
-                        ),
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () {
-                              setState(() {
-                                isDataCaptureSelected = false;
-                                _loadMediaData(); // Load media data when Media Capture is selected
-                              });
-                            },
-                            child: Text(
-                              'Media Capture',
-                              style: TextStyle(
-                                color: isDataCaptureSelected
-                                    ? Colors.grey
-                                    : Color.fromARGB(255, 32, 55, 187),
-                                fontWeight: FontWeight.bold,
-                                fontSize: screenWidth * 0.04,
-                              ),
-                            ),
-                          ),
-                        ),
+                        // Container(
+                        //   height: screenHeight * 0.04,
+                        //   width: 1,
+                        //   color: Color.fromARGB(255, 32, 55, 187),
+                        // ),
+                        // Expanded(
+                        //   child: TextButton(
+                        //     onPressed: () {
+                        //       setState(() {
+                        //         isDataCaptureSelected = false;
+                        //         _loadMediaData(); // Load media data when Media Capture is selected
+                        //       });
+                        //     },
+                        //     child: Text(
+                        //       'Media Capture',
+                        //       style: TextStyle(
+                        //         color: isDataCaptureSelected
+                        //             ? Colors.grey
+                        //             : Color.fromARGB(255, 32, 55, 187),
+                        //         fontWeight: FontWeight.bold,
+                        //         fontSize: screenWidth * 0.04,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),

@@ -27,7 +27,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           ),
           Column(
             children: [
-              SizedBox(height: screenHeight * 0.17), // Adjust height dynamically
+              SizedBox(
+                  height: screenHeight * 0.17), // Adjust height dynamically
               const Spacer(),
               Image.asset(
                 'assets/ROW_1_logo.png', // Replace with your logo image path
@@ -66,7 +67,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         height:
                             screenHeight * 0.01), // Adjust height dynamically
                     Text(
-                      'Sign up to start capturing data and  moments on the road to the grand Reach Out World Day!',
+                      'Sign up to start capturing data and',
                       style: TextStyle(
                         fontSize:
                             screenWidth * 0.04, // Adjust font size dynamically
@@ -75,7 +76,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       textAlign: TextAlign.center,
                     ),
                     Text(
-                      'sharing data to make a positive impact',
+                      'moments on the road to the grand ',
+                      style: TextStyle(
+                        fontSize:
+                            screenWidth * 0.04, // Adjust font size dynamically
+                        color: Colors.black,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      'Reach Out World Day!',
                       style: TextStyle(
                         fontSize:
                             screenWidth * 0.04, // Adjust font size dynamically

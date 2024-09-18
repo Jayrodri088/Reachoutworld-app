@@ -92,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _isLoading = false;
         });
-        _showAlertDialog('Wrong email or password');
+        _showAlertDialog('Please try again later');
       }
     }
   }

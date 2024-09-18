@@ -75,11 +75,11 @@ class DatabaseHelper {
     var request = http.MultipartRequest('POST', uri);
 
     request.fields['user_id'] = userId.toString();
+    request.files.add(await http.MultipartFile.fromPath('media', filePath));
     request.fields['media_type'] = mediaType;
     request.fields['user_country'] = userCountry ?? 'N/A';  // Send 'N/A' if null
     request.fields['user_state'] = userState ?? 'N/A';      // Send 'N/A' if null
     request.fields['user_region'] = userRegion ?? 'N/A';    // Send 'N/A' if null
-    request.files.add(await http.MultipartFile.fromPath('media', filePath));
 
     try {
       var response = await request.send();

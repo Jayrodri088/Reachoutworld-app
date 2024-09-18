@@ -3,9 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:dropdown_search/dropdown_search.dart'; // Import the DropdownSearch package
 import 'api/api_service.dart';
 import 'api/recent_activities_api_service.dart';
 import 'sign_in.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class DataCaptureForm extends StatefulWidget {
   final String userId;
@@ -28,57 +31,212 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
 
   String? _userCountry;
   String? _userState;
-  String? _userRegion; 
+  String? _userRegion;
+
+  String? region;
+  String? zone;
 
   final List<String> _countries = [
-    "Afghanistan", "Albania", "Algeria", "Andorra", "Angola",
-    "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
-    "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados",
-    "Belarus", "Belgium", "Belize", "Benin", "Bhutan",
-    "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei",
-    "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia",
-    "Cameroon", "Canada", "Central African Republic", "Chad", "Chile",
-    "China", "Colombia", "Comoros", "Congo, Democratic Republic of the",
+    "Afghanistan",
+    "Albania",
+    "Algeria",
+    "Andorra",
+    "Angola",
+    "Antigua and Barbuda",
+    "Argentina",
+    "Armenia",
+    "Australia",
+    "Austria",
+    "Azerbaijan",
+    "Bahamas",
+    "Bahrain",
+    "Bangladesh",
+    "Barbados",
+    "Belarus",
+    "Belgium",
+    "Belize",
+    "Benin",
+    "Bhutan",
+    "Bolivia",
+    "Bosnia and Herzegovina",
+    "Botswana",
+    "Brazil",
+    "Brunei",
+    "Bulgaria",
+    "Burkina Faso",
+    "Burundi",
+    "Cabo Verde",
+    "Cambodia",
+    "Cameroon",
+    "Canada",
+    "Central African Republic",
+    "Chad",
+    "Chile",
+    "China",
+    "Colombia",
+    "Comoros",
+    "Congo, Democratic Republic of the",
     "Congo, Republic of the",
-    "Costa Rica", "Cote d'Ivoire", "Croatia", "Cuba", "Cyprus",
-    "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic",
-    "East Timor (Timor-Leste)", "Ecuador", "Egypt", "El Salvador",
+    "Costa Rica",
+    "Cote d'Ivoire",
+    "Croatia",
+    "Cuba",
+    "Cyprus",
+    "Czech Republic",
+    "Denmark",
+    "Djibouti",
+    "Dominica",
+    "Dominican Republic",
+    "East Timor (Timor-Leste)",
+    "Ecuador",
+    "Egypt",
+    "El Salvador",
     "Equatorial Guinea",
-    "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji",
-    "Finland", "France", "Gabon", "Gambia", "Georgia",
-    "Germany", "Ghana", "Greece", "Grenada", "Guatemala",
-    "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras",
-    "Hungary", "Iceland", "India", "Indonesia", "Iran",
-    "Iraq", "Ireland", "Israel", "Italy", "Jamaica",
-    "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati",
-    "Korea, North", "Korea, South", "Kosovo", "Kuwait", "Kyrgyzstan",
-    "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia",
-    "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar",
-    "Malawi", "Malaysia", "Maldives", "Mali", "Malta",
-    "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia",
-    "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco",
-    "Mozambique", "Myanmar (Burma)", "Namibia", "Nauru", "Nepal",
-    "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria",
-    "North Macedonia", "Norway", "Oman", "Pakistan", "Palau",
-    "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru",
-    "Philippines", "Poland", "Portugal", "Qatar", "Romania",
-    "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia",
+    "Eritrea",
+    "Estonia",
+    "Eswatini",
+    "Ethiopia",
+    "Fiji",
+    "Finland",
+    "France",
+    "Gabon",
+    "Gambia",
+    "Georgia",
+    "Germany",
+    "Ghana",
+    "Greece",
+    "Grenada",
+    "Guatemala",
+    "Guinea",
+    "Guinea-Bissau",
+    "Guyana",
+    "Haiti",
+    "Honduras",
+    "Hungary",
+    "Iceland",
+    "India",
+    "Indonesia",
+    "Iran",
+    "Iraq",
+    "Ireland",
+    "Israel",
+    "Italy",
+    "Jamaica",
+    "Japan",
+    "Jordan",
+    "Kazakhstan",
+    "Kenya",
+    "Kiribati",
+    "Korea, North",
+    "Korea, South",
+    "Kosovo",
+    "Kuwait",
+    "Kyrgyzstan",
+    "Laos",
+    "Latvia",
+    "Lebanon",
+    "Lesotho",
+    "Liberia",
+    "Libya",
+    "Liechtenstein",
+    "Lithuania",
+    "Luxembourg",
+    "Madagascar",
+    "Malawi",
+    "Malaysia",
+    "Maldives",
+    "Mali",
+    "Malta",
+    "Marshall Islands",
+    "Mauritania",
+    "Mauritius",
+    "Mexico",
+    "Micronesia",
+    "Moldova",
+    "Monaco",
+    "Mongolia",
+    "Montenegro",
+    "Morocco",
+    "Mozambique",
+    "Myanmar (Burma)",
+    "Namibia",
+    "Nauru",
+    "Nepal",
+    "Netherlands",
+    "New Zealand",
+    "Nicaragua",
+    "Niger",
+    "Nigeria",
+    "North Macedonia",
+    "Norway",
+    "Oman",
+    "Pakistan",
+    "Palau",
+    "Palestine",
+    "Panama",
+    "Papua New Guinea",
+    "Paraguay",
+    "Peru",
+    "Philippines",
+    "Poland",
+    "Portugal",
+    "Qatar",
+    "Romania",
+    "Russia",
+    "Rwanda",
+    "Saint Kitts and Nevis",
+    "Saint Lucia",
     "Saint Vincent and the Grenadines",
-    "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal",
-    "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia",
-    "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Sudan",
-    "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden",
-    "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania",
-    "Thailand", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia",
-    "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine",
-    "United Arab Emirates", "United Kingdom", "United States", "Uruguay",
+    "Samoa",
+    "San Marino",
+    "Sao Tome and Principe",
+    "Saudi Arabia",
+    "Senegal",
+    "Serbia",
+    "Seychelles",
+    "Sierra Leone",
+    "Singapore",
+    "Slovakia",
+    "Slovenia",
+    "Solomon Islands",
+    "Somalia",
+    "South Africa",
+    "South Sudan",
+    "Spain",
+    "Sri Lanka",
+    "Sudan",
+    "Suriname",
+    "Sweden",
+    "Switzerland",
+    "Syria",
+    "Taiwan",
+    "Tajikistan",
+    "Tanzania",
+    "Thailand",
+    "Togo",
+    "Tonga",
+    "Trinidad and Tobago",
+    "Tunisia",
+    "Turkey",
+    "Turkmenistan",
+    "Tuvalu",
+    "Uganda",
+    "Ukraine",
+    "United Arab Emirates",
+    "United Kingdom",
+    "United States",
+    "Uruguay",
     "Uzbekistan",
-    "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen",
-    "Zambia", "Zimbabwe"
-    // Add more countries as needed
+    "Vanuatu",
+    "Vatican City",
+    "Venezuela",
+    "Vietnam",
+    "Yemen",
+    "Zambia",
+    "Zimbabwe"
   ];
 
-   // Function to get the user's location and geocode it to an address
+ // Function to get the user's location and geocode it to an address
   Future<void> _getUserLocation() async {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -125,11 +283,40 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
     }
   }
 
+  // New function to fetch region and zone using GET request
+  Future<void> _getRegionAndZone() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://apps.qubators.biz/reachoutworlddc/update_region_zone.php?user_id=${widget.userId}'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          setState(() {
+            region = data['region'];
+            zone = data['zone'];
+          });
+          print('Region: $region, Zone: $zone');
+        } else {
+          print('Error fetching region and zone: ${data['message']}');
+        }
+      } else {
+        print('Failed to fetch region and zone: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error in GET request: $e');
+    }
+  }
+
   Future<void> _captureData() async {
     if (_formKey.currentState!.validate()) {
       try {
         // Fetch the user's location before submitting the form
         await _getUserLocation();
+
+        // Fetch the user's region and zone using GET request
+        await _getRegionAndZone();
 
         // Prepare the data to be sent
         print('Sending data: ${{
@@ -141,6 +328,8 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
           'user_country': _userCountry ?? 'N/A',
           'user_state': _userState ?? 'N/A',
           'user_city': _userRegion ?? 'N/A',
+          'region': region ?? 'N/A',
+          'zone': zone ?? 'N/A',
         }}');
 
         // Send data to the API service
@@ -153,6 +342,8 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
           _userCountry ?? 'N/A',
           _userState ?? 'N/A',
           _userRegion ?? 'N/A',
+          region ?? 'N/A',
+          zone ?? 'N/A',
         );
 
         print('Response from server: $response');
@@ -177,9 +368,18 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
         }
       } catch (e) {
         print('Error during data capture: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to capture data. Error: $e')),
-        );
+        if (e.toString().contains('409')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text(
+                    'Duplicate entry: This data has already been captured')),
+          );
+        } else {
+          // For other errors, display the error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to capture data. Error: $e')),
+          );
+        }
       }
     }
   }
@@ -271,21 +471,18 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
                   },
                 ),
                 const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(
-                    labelText: 'Country of Residence',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.flag),
+                DropdownSearch<String>(
+                  popupProps: PopupProps.menu(
+                    showSearchBox: true,
                   ),
-                  value: _countries.contains(_countryController.text)
-                      ? _countryController.text
-                      : null,
-                  items: _countries.map((String country) {
-                    return DropdownMenuItem<String>(
-                      value: country,
-                      child: Text(country),
-                    );
-                  }).toList(),
+                  items: _countries,
+                  dropdownDecoratorProps: DropDownDecoratorProps(
+                    dropdownSearchDecoration: const InputDecoration(
+                      labelText: 'Country of Residence',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.flag),
+                    ),
+                  ),
                   onChanged: (String? newValue) {
                     setState(() {
                       _countryController.text = newValue!;

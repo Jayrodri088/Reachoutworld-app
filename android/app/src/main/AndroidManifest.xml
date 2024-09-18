@@ -11,7 +11,7 @@
 
 
     <application
-        android:label="data_capture"
+        android:label="Data capture"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         

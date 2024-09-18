@@ -5,7 +5,7 @@ import 'dart:async';
 class ApiService {
   final String baseUrl = 'http://apps.qubators.biz/reachoutworlddc'; // Your live server URL
 
-  // Updated method signature to accept optional location parameters
+  // Updated method signature to include region and zone
   Future<Map<String, dynamic>> registerUser(
       String userId,
       String name,
@@ -14,7 +14,9 @@ class ApiService {
       String country,
       String? userCountry,  // Nullable location parameters
       String? userState,
-      String? userRegion) async {  // Updated from userCity to userRegion
+      String? userRegion,   // User region
+      String? region,       // New region field
+      String? zone) async { // New zone field
     try {
       // Send the POST request with JSON data
       final response = await http.post(
@@ -32,6 +34,8 @@ class ApiService {
             'user_country': userCountry ?? 'N/A', // If null, send 'N/A'
             'user_state': userState ?? 'N/A',     // If null, send 'N/A'
             'user_region': userRegion ?? 'N/A',   // Corrected to match backend expectations
+            'region': region ?? 'N/A',            // Region field
+            'zone': zone ?? 'N/A',                // Zone field
           },
         ),
       ).timeout(const Duration(seconds: 120)); // Set timeout for request

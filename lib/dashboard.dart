@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'settings.dart';
 import 'camera_screen.dart';
 import 'sidebar.dart';
 import 'data_capture_form.dart';
@@ -46,7 +46,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _fetchUserData() async {
-    const String url = 'http://apps.qubators.biz/reachoutworlddc/dashboard.php'; // Your backend URL
+    const String url =
+        'http://apps.qubators.biz/reachoutworlddc/dashboard.php'; // Your backend URL
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -88,10 +89,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _uploadProfileImage(File image) async {
-    const url = 'http://apps.qubators.biz/reachoutworlddc/profile.php'; // Your backend URL
+    const url =
+        'http://apps.qubators.biz/reachoutworlddc/profile.php'; // Your backend URL
     final request = http.MultipartRequest('POST', Uri.parse(url));
     request.fields['user_id'] = widget.userId;
-    request.files.add(await http.MultipartFile.fromPath('profile_picture', image.path));
+    request.files
+        .add(await http.MultipartFile.fromPath('profile_picture', image.path));
 
     final response = await request.send();
 
@@ -111,10 +114,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result['message'] ?? 'Image upload failed')),
         );
+        print('Error details: ${result['error']}');
+        print('Temporary file path: ${result['tmp_name']}');
+        print('Target file path: ${result['target_file']}');
+        print('Upload error code: ${result['upload_error']}');
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to upload image.')),
+        const SnackBar(content: Text('Welcome.')),
       );
     }
   }
@@ -127,7 +134,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       drawer: Sidebar(
         userName: _userName ?? 'Loading...',
         userCountry: _userCountry ?? 'Loading...',
-        profileImage: _profileImageUrl ?? 'assets/profile_1.webp', // Fallback to default image
+        profileImage: _profileImageUrl ??
+            'assets/profile_1.webp', // Fallback to default image
       ),
       body: IndexedStack(
         index: _selectedIndex,
@@ -136,12 +144,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             userId: widget.userId,
             userName: _userName ?? 'User', // Pass userName
             userCountry: _userCountry ?? 'Country', // Pass userCountry
-            profileImageUrl: _profileImageUrl ?? 'assets/profile_1.webp', // Pass profile image URL
+            profileImageUrl: _profileImageUrl ??
+                'assets/profile_1.webp', // Pass profile image URL
             pickImageFunction: _pickImage, // Pass the _pickImage function
           ),
           const WalletScreen(),
           RecentActivitiesScreen(),
-          const Center(child: Text('Settings Screen Placeholder')),
+          SettingsPage(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -150,9 +159,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         onTap: _onItemTapped,
         items: [
           _buildBottomNavigationBarItem('assets/icon/home.png', 'Home', 0),
-          _buildBottomNavigationBarItem('assets/icon/wallet_1.png', 'Wallet', 1),
-          _buildBottomNavigationBarItem('assets/icon/history_1.png', 'History', 2),
-          _buildBottomNavigationBarItem('assets/icon/settings_3.png', 'Settings', 3),
+          _buildBottomNavigationBarItem(
+              'assets/icon/wallet_1.png', 'Wallet', 1),
+          _buildBottomNavigationBarItem(
+              'assets/icon/history_1.png', 'History', 2),
+          _buildBottomNavigationBarItem(
+              'assets/icon/settings_3.png', 'Settings', 3),
         ],
         selectedItemColor: Color.fromARGB(255, 32, 55, 187),
         unselectedItemColor: Colors.grey,
@@ -248,7 +260,8 @@ class DashboardContent extends StatelessWidget {
                 onTap: pickImageFunction, // Use the passed function
                 child: CircleAvatar(
                   radius: screenWidth * 0.1,
-                  backgroundImage: FileImage(File(profileImageUrl)), // Updated to use FileImage
+                  backgroundImage: FileImage(
+                      File(profileImageUrl)), // Updated to use FileImage
                 ),
               ),
               SizedBox(width: screenWidth * 0.03),
