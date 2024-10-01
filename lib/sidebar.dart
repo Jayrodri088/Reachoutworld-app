@@ -52,8 +52,8 @@ class Sidebar extends StatelessWidget {
                     CircleAvatar(
                       radius: 30,
                       backgroundImage: isAssetImage
-                          ? AssetImage(profileImage) as ImageProvider
-                          : FileImage(File(profileImage)),
+                          ? NetworkImage(profileImage) as ImageProvider
+                          : NetworkImage((profileImage)),
                     ),
                     const SizedBox(width: 5),
                     Column(

@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -8,6 +8,14 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+
+    <queries>
+    <package android:name="com.whatsapp" />
+    <package android:name="com.instagram.android" />
+    <package android:name="com.facebook.katana" />
+    <package android:name="com.twitter.android" />
+    <package android:name="org.telegram.messenger" />
+    </queries>
 
 
     <application
@@ -42,6 +50,18 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <provider
+        android:name="androidx.core.content.FileProvider"
+        android:authorities="${applicationId}.com.shekarmudaliyar.social_share"
+        android:exported="false"
+        android:grantUriPermissions="true"
+        tools:replace="android:authorities">
+        <meta-data
+            android:name="android.support.FILE_PROVIDER_PATHS"
+            android:resource="@xml/filepaths" />
+        </provider>
+        
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

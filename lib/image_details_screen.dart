@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Import for Font Awesome icons
 import 'dart:io';
+import 'package:share_plus/share_plus.dart'; // Import for share_plus
+import 'package:social_share/social_share.dart'; // Import for social_share
 import 'package:intl/intl.dart'; // For date formatting
-import 'package:path_provider/path_provider.dart'; // For accessing the device's file system
+// import 'package:path_provider/path_provider.dart'; // For accessing the device's file system
 import 'package:video_player/video_player.dart';
 
 class ImageDetailsScreen extends StatefulWidget {
-  final String mediaPath;
+  final String mediaPath; // This is the file path used for sharing
   final String mediaType;
   final VoidCallback onDelete;
-  final ValueChanged<String> onSave;
+  final ValueChanged<String> onSave; // We will reuse this for sharing
 
   const ImageDetailsScreen({
     super.key,
@@ -23,13 +26,14 @@ class ImageDetailsScreen extends StatefulWidget {
 }
 
 class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
-  late File _mediaFile;
+  late File _mediaFile; // The actual file
   late VideoPlayerController _videoController;
+  final String _hashtags = "#Flutter #MediaSharing #SocialApp";
 
   @override
   void initState() {
     super.initState();
-    _mediaFile = File(widget.mediaPath);
+    _mediaFile = File(widget.mediaPath); // Set the file path
 
     if (widget.mediaType == 'video') {
       _videoController = VideoPlayerController.file(_mediaFile)
@@ -48,19 +52,96 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
     super.dispose();
   }
 
-  Future<void> _saveEditedImage() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final editedImagePath =
-        '${directory.path}/${DateTime.now().millisecondsSinceEpoch}_edited.jpg';
-    _mediaFile.copySync(editedImagePath);
-
-    widget.onSave(editedImagePath);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Image saved successfully')),
+  // This function opens the bottom sheet for sharing options
+  Future<void> _openShareOptions() async {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 150,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Column(
+                    children: [
+                      IconButton(
+                        icon: FaIcon(FontAwesomeIcons.facebook,
+                            color: Colors.blue), // Facebook icon
+                        iconSize: 40,
+                        onPressed: () {
+                          SocialShare.shareFacebookStory(
+                            imagePath:
+                                widget.mediaPath, // Use the correct media path
+                            backgroundTopColor: "#ffffff",
+                            backgroundBottomColor: "#000000",
+                            attributionURL: "https://flutter.dev",
+                            appId:
+                                "1589353818318673", // Replace with actual Facebook App ID
+                          ).then((data) {
+                            print("Shared to Facebook: $data");
+                            Navigator.pop(context); // Close after sharing
+                          }).catchError((error) {
+                            print("Error: $error");
+                          });
+                        },
+                      ),
+                      const Text('Facebook'),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      IconButton(
+                        icon: FaIcon(FontAwesomeIcons.instagram,
+                            color: const Color.fromARGB(255, 176, 39, 50)), // Instagram icon
+                        iconSize: 40,
+                        onPressed: () {
+                          SocialShare.shareInstagramStory(
+                            imagePath:
+                                widget.mediaPath, // Use the correct media path
+                            backgroundTopColor: "#ffffff",
+                            backgroundBottomColor: "#000000",
+                            attributionURL: "https://flutter.dev",
+                            appId: "563769332663383",
+                          ).then((data) {
+                            print("Shared to Instagram: $data");
+                            Navigator.pop(context); // Close after sharing
+                          }).catchError((error) {
+                            print("Error: $error");
+                          });
+                        },
+                      ),
+                      const Text('Instagram'),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      IconButton(
+                        icon: FaIcon(FontAwesomeIcons.shareNodes,
+                            color: Colors.black), // Default share icon
+                        iconSize: 30,
+                        onPressed: () {
+                          Share.shareXFiles(
+                            [
+                              XFile(widget.mediaPath)
+                            ], // This replaces shareFiles with shareXFiles
+                            text: 'Check out this media! $_hashtags',
+                          );
+                          Navigator.pop(context); // Close after sharing
+                        },
+                      ),
+                      const Text('Share'),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
-
-    Navigator.of(context).pop(); // Go back to gallery screen
   }
 
   @override
@@ -79,7 +160,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Image.asset(
-            'assets/arrow.png', // Replace with your back arrow image path
+            'assets/arrow.png', // Your back arrow image
             width: 30,
             height: 30,
           ),
@@ -127,11 +208,8 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
               Column(
                 children: [
                   IconButton(
-                    icon: Image.asset(
-                      'assets/icon/delete.png',
-                      height: 40,
-                      width: 40,
-                    ),
+                    icon: FaIcon(FontAwesomeIcons.trash,
+                        color: Colors.blue), // Trash icon
                     iconSize: 20,
                     onPressed: () {
                       widget.onDelete();
@@ -142,8 +220,8 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
                   const Text(
                     'Delete',
                     style: TextStyle(
-                        color: Colors.yellow,
-                        fontSize: 17,
+                        color: Colors.blue,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -151,19 +229,17 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
               Column(
                 children: [
                   IconButton(
-                    icon: Image.asset(
-                      'assets/icon/save_1.png',
-                      height: 40,
-                      width: 40,
-                    ),
+                    icon: FaIcon(FontAwesomeIcons.shareNodes,
+                        color: Colors.blue), // Share icon
                     iconSize: 20,
-                    onPressed: _saveEditedImage,
+                    onPressed:
+                        _openShareOptions, // Open the share options when clicked
                   ),
                   const Text(
-                    'Save',
+                    'Share', // Change label to "Share"
                     style: TextStyle(
-                        color: Colors.yellow,
-                        fontSize: 17,
+                        color: Colors.blue,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold),
                   ),
                 ],

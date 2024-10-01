@@ -36,6 +36,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    print("DashboardScreen initialized"); // Check if initState is called
     _fetchUserData();
   }
 
@@ -48,7 +49,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _fetchUserData() async {
     const String url =
         'http://apps.qubators.biz/reachoutworlddc/dashboard.php'; // Your backend URL
+    const String imageBaseUrl =
+        'http://apps.qubators.biz/reachoutworlddc/'; // Your image base URL
+
     try {
+      print("Fetching user data..."); // Check if fetching starts
+
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
@@ -58,17 +64,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
 
       if (response.statusCode == 200) {
+        print(
+            "User data fetched successfully!"); // Check if user data is fetched
+        print(
+            "Response body: ${response.body}"); // Print entire server response for debugging
+
         final Map<String, dynamic> data = json.decode(response.body);
 
         setState(() {
           _userName = data['name'];
           _userCountry = data['country'];
-          _profileImageUrl = data['profile_picture_url'];
+
+          // Prepend base URL if the image URL is a relative path
+          if (data['profile_picture'] != null &&
+              !data['profile_picture'].startsWith('http')) {
+            _profileImageUrl = Uri.parse(imageBaseUrl)
+                .resolve(data['profile_picture'])
+                .toString();
+          } else {
+            _profileImageUrl = data['profile_picture'];
+          }
+
+          print(
+              "Profile image URL: $_profileImageUrl"); // Print the constructed profile image URL
         });
       } else {
+        print(
+            "Failed to load user data: ${response.statusCode}"); // Log if there's an error status code
         throw Exception('Failed to load user data');
       }
     } catch (e) {
+      print("Error occurred: $e"); // Log the error if exception occurs
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
@@ -81,7 +107,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
-        // Update the profile image locally, even if the upload fails
         _profileImageUrl = _imageFile!.path;
       });
       await _uploadProfileImage(_imageFile!);
@@ -104,12 +129,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       if (result['status'] == 'success') {
         setState(() {
-          //Done by Jay
           _profileImageUrl = result['profile_picture_url'];
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile image updated successfully')),
         );
+
+        // Call fetchUserData after successful upload
+        await _fetchUserData();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result['message'] ?? 'Image upload failed')),
@@ -260,8 +287,7 @@ class DashboardContent extends StatelessWidget {
                 onTap: pickImageFunction, // Use the passed function
                 child: CircleAvatar(
                   radius: screenWidth * 0.1,
-                  backgroundImage: FileImage(
-                      File(profileImageUrl)), // Updated to use FileImage
+                  backgroundImage: _getImageProvider(), // Updated here
                 ),
               ),
               SizedBox(width: screenWidth * 0.03),
@@ -325,6 +351,15 @@ class DashboardContent extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  ImageProvider _getImageProvider() {
+    if (profileImageUrl.startsWith('http')) {
+      return NetworkImage(profileImageUrl); // Network image
+    } else {
+      return const AssetImage(
+          'assets/profile_1.webp'); // Fallback if issue arises
+    }
   }
 
   Widget _buildGridItem(BuildContext context, String imagePath, String title,

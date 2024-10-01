@@ -56,6 +56,22 @@
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>This app needs access to your location to provide location-based features.</string>
 
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>instagram-stories</string>
+		<string>facebook-stories</string>
+		<string>facebook</string>
+		<string>instagram</string>
+		<string>twitter</string>
+		<string>whatsapp</string>
+		<string>tg</string> <!-- Telegram -->
+	</array>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to pick images and videos for sharing.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to take photos and videos for sharing.</string>
+
 
 </dict>
 </plist>
