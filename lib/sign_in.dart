@@ -85,14 +85,29 @@ class _LoginScreenState extends State<LoginScreen> {
               builder: (context) => DashboardScreen(userId: userId),
             ),
           );
-        } else {
-          _showAlertDialog(response['message'] ?? 'Login failed');
-        }
+        }else if (response['status'] == 'error') {
+        // If the response contains an error, show the error message
+        _showAlertDialog(response['message'] ?? 'Login failed');
+      } else {
+        // If neither success nor error, show a generic message
+        _showAlertDialog('Login failed. Please try again later.');
+      }
       } catch (e) {
         setState(() {
           _isLoading = false;
         });
-        _showAlertDialog('Please try again later');
+         String errorMessage;
+
+      // Handle known error cases (like network issues or decoding problems)
+      if (e is SocketException) {
+        errorMessage = 'No internet connection. Please check your connection.';
+      } else if (e is FormatException) {
+        errorMessage = 'Bad response format from the server. Please try again later.';
+      } else {
+        errorMessage = 'Please try again later.';
+      }
+
+      _showAlertDialog(errorMessage);
       }
     }
   }
@@ -126,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
         builder: (BuildContext context) {
           return CupertinoAlertDialog(
             title: const Text('Login Failed'),
-            content: Text('Wrong email or password'),
+            content: Text(message),
             actions: <CupertinoDialogAction>[
               CupertinoDialogAction(
                 child: const Text('OK'),

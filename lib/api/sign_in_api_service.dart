@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class SignInApiService {
-  final String baseUrl =
-      'http://apps.qubators.biz/reachoutworlddc/login.php'; // Correct backend URL for the sign-in endpoint
+  final String baseUrl = 'http://apps.qubators.biz/reachoutworlddc/login.php'; // Correct backend URL
 
   Future<Map<String, dynamic>> signInUser(String email, String password) async {
     try {
@@ -24,13 +23,18 @@ class SignInApiService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
 
-        if (responseData.containsKey('user_id')) {
-          // Ensure the response contains a user_id
+        if (responseData['status'] == 'success') {
+          // Login success, return the full response
+          return responseData;
+        } else if (responseData['status'] == 'error') {
+          // Login failed, return the error message
           return responseData;
         } else {
-          throw Exception('Invalid response: Missing user_id');
+          // Handle unexpected responses
+          throw Exception('Unexpected server response.');
         }
       } else {
+        // Handle non-200 HTTP responses
         throw Exception(
             'Failed to sign in. Server responded with status code ${response.statusCode}');
       }

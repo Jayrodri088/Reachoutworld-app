@@ -1,6 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:io';
+
 import 'package:data_app/sign_in.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 // import 'verification_code.dart';
@@ -25,46 +28,205 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   String? _selectedCountry;
-  final List<String> _countries = [    "Afghanistan", "Albania", "Algeria", "Andorra", "Angola",
-    "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
-    "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados",
-    "Belarus", "Belgium", "Belize", "Benin", "Bhutan",
-    "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei",
-    "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia",
-    "Cameroon", "Canada", "Central African Republic", "Chad", "Chile",
-    "China", "Colombia", "Comoros", "Congo, Democratic Republic of the", "Congo, Republic of the",
-    "Costa Rica", "Cote d'Ivoire", "Croatia", "Cuba", "Cyprus",
-    "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic",
-    "East Timor (Timor-Leste)", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea",
-    "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji",
-    "Finland", "France", "Gabon", "Gambia", "Georgia",
-    "Germany", "Ghana", "Greece", "Grenada", "Guatemala",
-    "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras",
-    "Hungary", "Iceland", "India", "Indonesia", "Iran",
-    "Iraq", "Ireland", "Israel", "Italy", "Jamaica",
-    "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati",
-    "Korea, North", "Korea, South", "Kosovo", "Kuwait", "Kyrgyzstan",
-    "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia",
-    "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar",
-    "Malawi", "Malaysia", "Maldives", "Mali", "Malta",
-    "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia",
-    "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco",
-    "Mozambique", "Myanmar (Burma)", "Namibia", "Nauru", "Nepal",
-    "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria",
-    "North Macedonia", "Norway", "Oman", "Pakistan", "Palau",
-    "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru",
-    "Philippines", "Poland", "Portugal", "Qatar", "Romania",
-    "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines",
-    "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal",
-    "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia",
-    "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Sudan",
-    "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden",
-    "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania",
-    "Thailand", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia",
-    "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine",
-    "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan",
-    "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen",
-    "Zambia", "Zimbabwe"];
+  final List<String> _countries = [
+    "Afghanistan",
+    "Albania",
+    "Algeria",
+    "Andorra",
+    "Angola",
+    "Antigua and Barbuda",
+    "Argentina",
+    "Armenia",
+    "Australia",
+    "Austria",
+    "Azerbaijan",
+    "Bahamas",
+    "Bahrain",
+    "Bangladesh",
+    "Barbados",
+    "Belarus",
+    "Belgium",
+    "Belize",
+    "Benin",
+    "Bhutan",
+    "Bolivia",
+    "Bosnia and Herzegovina",
+    "Botswana",
+    "Brazil",
+    "Brunei",
+    "Bulgaria",
+    "Burkina Faso",
+    "Burundi",
+    "Cabo Verde",
+    "Cambodia",
+    "Cameroon",
+    "Canada",
+    "Central African Republic",
+    "Chad",
+    "Chile",
+    "China",
+    "Colombia",
+    "Comoros",
+    "Congo, Democratic Republic of the",
+    "Congo, Republic of the",
+    "Costa Rica",
+    "Cote d'Ivoire",
+    "Croatia",
+    "Cuba",
+    "Cyprus",
+    "Czech Republic",
+    "Denmark",
+    "Djibouti",
+    "Dominica",
+    "Dominican Republic",
+    "East Timor (Timor-Leste)",
+    "Ecuador",
+    "Egypt",
+    "El Salvador",
+    "Equatorial Guinea",
+    "Eritrea",
+    "Estonia",
+    "Eswatini",
+    "Ethiopia",
+    "Fiji",
+    "Finland",
+    "France",
+    "Gabon",
+    "Gambia",
+    "Georgia",
+    "Germany",
+    "Ghana",
+    "Greece",
+    "Grenada",
+    "Guatemala",
+    "Guinea",
+    "Guinea-Bissau",
+    "Guyana",
+    "Haiti",
+    "Honduras",
+    "Hungary",
+    "Iceland",
+    "India",
+    "Indonesia",
+    "Iran",
+    "Iraq",
+    "Ireland",
+    "Israel",
+    "Italy",
+    "Jamaica",
+    "Japan",
+    "Jordan",
+    "Kazakhstan",
+    "Kenya",
+    "Kiribati",
+    "Korea, North",
+    "Korea, South",
+    "Kosovo",
+    "Kuwait",
+    "Kyrgyzstan",
+    "Laos",
+    "Latvia",
+    "Lebanon",
+    "Lesotho",
+    "Liberia",
+    "Libya",
+    "Liechtenstein",
+    "Lithuania",
+    "Luxembourg",
+    "Madagascar",
+    "Malawi",
+    "Malaysia",
+    "Maldives",
+    "Mali",
+    "Malta",
+    "Marshall Islands",
+    "Mauritania",
+    "Mauritius",
+    "Mexico",
+    "Micronesia",
+    "Moldova",
+    "Monaco",
+    "Mongolia",
+    "Montenegro",
+    "Morocco",
+    "Mozambique",
+    "Myanmar (Burma)",
+    "Namibia",
+    "Nauru",
+    "Nepal",
+    "Netherlands",
+    "New Zealand",
+    "Nicaragua",
+    "Niger",
+    "Nigeria",
+    "North Macedonia",
+    "Norway",
+    "Oman",
+    "Pakistan",
+    "Palau",
+    "Palestine",
+    "Panama",
+    "Papua New Guinea",
+    "Paraguay",
+    "Peru",
+    "Philippines",
+    "Poland",
+    "Portugal",
+    "Qatar",
+    "Romania",
+    "Russia",
+    "Rwanda",
+    "Saint Kitts and Nevis",
+    "Saint Lucia",
+    "Saint Vincent and the Grenadines",
+    "Samoa",
+    "San Marino",
+    "Sao Tome and Principe",
+    "Saudi Arabia",
+    "Senegal",
+    "Serbia",
+    "Seychelles",
+    "Sierra Leone",
+    "Singapore",
+    "Slovakia",
+    "Slovenia",
+    "Solomon Islands",
+    "Somalia",
+    "South Africa",
+    "South Sudan",
+    "Spain",
+    "Sri Lanka",
+    "Sudan",
+    "Suriname",
+    "Sweden",
+    "Switzerland",
+    "Syria",
+    "Taiwan",
+    "Tajikistan",
+    "Tanzania",
+    "Thailand",
+    "Togo",
+    "Tonga",
+    "Trinidad and Tobago",
+    "Tunisia",
+    "Turkey",
+    "Turkmenistan",
+    "Tuvalu",
+    "Uganda",
+    "Ukraine",
+    "United Arab Emirates",
+    "United Kingdom",
+    "United States",
+    "Uruguay",
+    "Uzbekistan",
+    "Vanuatu",
+    "Vatican City",
+    "Venezuela",
+    "Vietnam",
+    "Yemen",
+    "Zambia",
+    "Zimbabwe"
+  ];
 
   @override
   void initState() {
@@ -90,31 +252,78 @@ class _SignUpScreenState extends State<SignUpScreen> {
         });
 
         if (response['status'] == 'success') {
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('User registered successfully')));
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
-          );
-        } else {
-          debugPrint('Error: ${response['message']}');
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(response['message'])));
+          _showAlertDialog(
+              'Registration Successful', 'User registered successfully',
+              success: true);
+        } else if (response['status'] == 'error') {
+          _showAlertDialog('Registration Failed',
+              response['message'] ?? 'Registration failed');
         }
       } catch (e) {
         setState(() {
           _isLoading = false;
         });
-        debugPrint('Exception: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to register user')));
+        _showAlertDialog('Registration Failed',
+            'Failed to register user. Please try again later');
       }
     } else if (!_isChecked) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              'You need to agree with the Terms and Privacy Policy to continue.'),
-        ),
+      _showAlertDialog('Terms and Privacy Policy',
+          'You need to agree with the Terms and Privacy Policy to continue.');
+    }
+  }
+
+  void _showAlertDialog(String title, String message, {bool success = false}) {
+    if (Platform.isIOS) {
+      showCupertinoDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CupertinoAlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: <CupertinoDialogAction>[
+              CupertinoDialogAction(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  if (success) {
+                    // Navigate to LoginScreen if registration was successful
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LoginScreen()),
+                    );
+                  }
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  if (success) {
+                    // Navigate to LoginScreen if registration was successful
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LoginScreen()),
+                    );
+                  }
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
       );
     }
   }

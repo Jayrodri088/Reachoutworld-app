@@ -1,5 +1,8 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -311,6 +314,7 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
 
   Future<void> _captureData() async {
     if (_formKey.currentState!.validate()) {
+      
       try {
         // Fetch the user's location before submitting the form
         await _getUserLocation();
@@ -348,41 +352,73 @@ class _DataCaptureFormState extends State<DataCaptureForm> {
 
         print('Response from server: $response');
 
-        if (response['status'] == 'success') {
-          List<Map<String, dynamic>> updatedActivities =
-              await recentActivitiesApiService
-                  .getRecentActivities(widget.userId);
+       if (response['status'] == 'success') {
+        List<Map<String, dynamic>> updatedActivities =
+            await recentActivitiesApiService.getRecentActivities(widget.userId);
 
-          // Update recent activities
-          setState(() {
-            recentActivities = updatedActivities;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Data captured successfully')),
-          );
-          Navigator.pop(context);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response['message'] ?? 'Unknown error')),
-          );
-        }
-      } catch (e) {
-        print('Error during data capture: $e');
-        if (e.toString().contains('409')) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text(
-                    'Duplicate entry: This data has already been captured')),
-          );
-        } else {
-          // For other errors, display the error message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to capture data. Error: $e')),
-          );
-        }
+        // Update recent activities
+        setState(() {
+          recentActivities = updatedActivities;
+        });
+
+        // Show success message in AlertDialog
+          _showAlertDialog('Success', 'Data captured successfully');
+      } else {
+        _showAlertDialog('Error', response['message'] ?? 'Unknown error');
+      }
+    } catch (e) {
+      print('Error during data capture: $e');
+      if (e.toString().contains('409')) {
+        _showAlertDialog('Duplicate Entry', 'This data has already been captured');
+      } else {
+        _showAlertDialog('Error', 'Failed to capture data. Error: $e');
+      }
       }
     }
   }
+
+  void _showAlertDialog(String title, String message) {
+  if (Platform.isIOS) {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: <CupertinoDialogAction>[
+            CupertinoDialogAction(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  } else {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class SignUpApiService {
   final String baseUrl =
-      'http://apps.qubators.biz/reachoutworlddc/register.php'; // Ensure this URL is correct
+      'http://apps.qubators.biz/reachoutworlddc/register.php'; // Correct backend URL
 
   Future<Map<String, dynamic>> registerUser(
       String name, String email, String country, String password) async {
@@ -25,16 +25,16 @@ class SignUpApiService {
       print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
-        try {
-          final Map<String, dynamic> responseData = json.decode(response.body);
-          if (responseData.containsKey('status') &&
-              responseData['status'] == 'success') {
-            return responseData;
-          } else {
-            throw Exception(responseData['message'] ?? 'Unknown error occurred');
-          }
-        } catch (e) {
-          throw Exception('Failed to parse JSON. Server response: ${response.body}');
+        // Attempt to parse the JSON response from the backend
+        final Map<String, dynamic> responseData = json.decode(response.body);
+
+        // Check for a success or error message from the server
+        if (responseData['status'] == 'success') {
+          return responseData;
+        } else if (responseData['status'] == 'error') {
+          return responseData;  // Return error message
+        } else {
+          throw Exception('Unexpected response format');
         }
       } else {
         throw Exception(
