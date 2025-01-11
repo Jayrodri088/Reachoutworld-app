@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:async';  // Import the Timer class
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +9,10 @@ import 'api/recent_activities_api_service.dart';
 import 'dashboard.dart';
 import 'password_recovery_screen.dart';
 import 'dart:io';
+import 'package:flutter_appauth/flutter_appauth.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
 
 // Global variable to store recent activities
 List<Map<String, dynamic>> recentActivities = [];
@@ -174,6 +180,20 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+void _loginWithKingsChat() async {
+  const kingsChatUrl =
+      'https://accounts.kingsch.at/?client_id=com.kingschat&scopes=%5B%22conference_calls%22%5D&post_redirect=true&redirect_uri=http://154.113.83.252/rowdmcc/kingschat_callback.php';
+
+  // Try to open the KingsChat URL in the browser
+  if (await canLaunch(kingsChatUrl)) {
+    await launch(kingsChatUrl);
+  } else {
+    // If URL can't be opened, show an error
+    _showAlertDialog('Failed to launch KingsChat login. Please try again later.');
+  }
+}
+
+
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
@@ -319,9 +339,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(height: screenHeight * 0.02),
                 GestureDetector(
-                  onTap: () {
-                    // Handle KingsChat login
-                  },
+                  onTap: _loginWithKingsChat,
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,

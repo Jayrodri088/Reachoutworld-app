@@ -2,6 +2,8 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        // Add JitPack repository for KingsChat SDK
+        maven { url 'https://jitpack.io' }
     }
 }
 

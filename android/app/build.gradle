@@ -38,6 +38,10 @@ android {
         applicationId = "com.lwpl.data_capture"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
+        manifestPlaceholders = [
+            appAuthRedirectScheme: 'com.lwpl.data_capture',  // Replace with your app's redirect scheme
+            applicationName: 'android.app.Application'
+        ]
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInteger()
@@ -55,4 +59,12 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Add this line to include KingsLogin SDK
+    implementation 'com.github.kingschat:KingsLogin-android:v0.0.1'
+    implementation 'com.facebook.android:facebook-android-sdk:latest.release'
+    // Other dependencies...
+    
 }
